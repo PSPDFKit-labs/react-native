@@ -6,13 +6,40 @@ import { exampleDocumentPath, pspdfkitColor } from '../configuration/Constants';
 import { BaseExampleAutoHidingHeaderComponent } from '../helpers/BaseExampleAutoHidingHeaderComponent';
 import { hideToolbar } from '../helpers/NavigationHelper';
 
+import { MaterialHeaderButtons } from '../helpers/MyHeaderButtons';
+import { Item } from 'react-navigation-header-buttons';
+
 export class PSPDFKitViewComponent extends BaseExampleAutoHidingHeaderComponent {
   pdfRef = null;
+  documentInteractionEnabled = true;
+
   constructor(props) {
     super(props);
     const { navigation } = this.props;
     this.pdfRef = React.createRef();
     hideToolbar(navigation);
+    navigation.setOptions({
+      headerRight: () => (
+        <MaterialHeaderButtons>
+          <Item
+            title="add"
+            iconName="lock-outline"
+            onPress={() => this.toggleDocumentInteraction()}
+          />
+          {/* Adding blank button to add padding */}
+          <Item
+              title=""
+              iconName=""
+            />
+        </MaterialHeaderButtons>
+      ),
+    });
+  }
+
+  async toggleDocumentInteraction() {
+
+    this.documentInteractionEnabled ? await this.pdfRef.current.disableDocumentInteraction() : await this.pdfRef.current.enableDocumentInteraction();
+    this.documentInteractionEnabled = !this.documentInteractionEnabled
   }
 
   render() {

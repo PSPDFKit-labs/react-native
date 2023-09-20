@@ -30,6 +30,7 @@ import { SaveAs } from './examples/SaveAs';
 import { SplitPDF } from './examples/SplitPDF';
 import { StateChange } from './examples/StateChange';
 import { ToolbarCustomization } from './examples/ToolbarCustomization';
+import { HeaderButtonsProvider } from 'react-navigation-header-buttons';
 import { PSPDFKit } from './helpers/PSPDFKit';
 
 // By default, this example doesn't set a license key, but instead runs in trial mode (which is the default, and which requires no
@@ -56,6 +57,7 @@ class Catalog extends Component {
 
     return (
       <NavigationContainer>
+        <HeaderButtonsProvider stackType={'native'}>
         <Stack.Navigator>
           <Stack.Screen name="Home" component={HomeScreen} />
           {/*initial={true} />*/}
@@ -107,6 +109,7 @@ class Catalog extends Component {
             initial={true}
           />
         </Stack.Navigator>
+        </HeaderButtonsProvider>
       </NavigationContainer>
     );
   }

@@ -74,14 +74,6 @@
       
     _overrideScrolling = [OverrideScrolling new];
       
-      NSMutableArray *buttonItems = [NSMutableArray arrayWithArray:_pdfController.navigationItem.rightBarButtonItems];
-      // ** If using a custom image **
-      // UIBarButtonItem *newItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"myImage.png"] style:UIBarButtonItemStylePlain target:self action:@selector(buttonPressed)];
-      // ** If using a custom image **
-      UIBarButtonItem *newItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCompose target:self action:@selector(customButtonPressed)];
-      [buttonItems addObject:newItem];
-      [_pdfController.navigationItem setRightBarButtonItems:buttonItems forViewMode:PSPDFViewModeDocument animated:NO];
-    
     // Store the closeButton's target and selector in order to call it later.
     _closeButtonAttributes = @{@"target" : _pdfController.closeButtonItem.target,
                               @"action" : NSStringFromSelector(_pdfController.closeButtonItem.action)};
@@ -192,8 +184,19 @@
 
 - (BOOL)enableDocumentInteraction:(BOOL)enable {
     
+    // Hide the toolbar & HUD
+    [_pdfController.navigationController setNavigationBarHidden:!enable animated:YES];
+    [_pdfController.annotationToolbarController hideToolbarAnimated:!enable completion:nil];
+    [_pdfController updateConfigurationWithBuilder:^(PSPDFConfigurationBuilder * _Nonnull builder) {
+        builder.pageLabelEnabled = enable;
+        builder.documentLabelEnabled = enable;
+        builder.thumbnailBarMode = enable ? PSPDFThumbnailBarModeFloatingScrubberBar : PSPDFThumbnailBarModeNone;
+    }];
+    
     // Disable all interactions on the document itself
     _pdfController.interactions.allInteractions.enabled = enable;
+    
+    
     
     // Disable ScrollView panGestureRecognizer
     return [_overrideScrolling enableInteraction:enable];
@@ -205,10 +208,6 @@
 
 - (BOOL)disableDocumentInteraction {
     return [self enableDocumentInteraction:NO];
-}
-
-- (void)customButtonPressed {
-    [self enableDocumentInteraction:![_overrideScrolling documentInteractionEnabled]];
 }
 
 // MARK: - PSPDFDocumentDelegate

@@ -76,12 +76,12 @@ PODS:
   - hermes-engine (0.71.8):
     - hermes-engine/Pre-built (= 0.71.8)
   - hermes-engine/Pre-built (0.71.8)
-  - Instant (12.4.0-dev)
+  - Instant (12.3.1)
   - libevent (2.1.12)
   - OpenSSL-Universal (1.1.1100)
-  - PSPDFKit (12.4.0-dev):
-    - PSPDFKit/Core (= 12.4.0-dev)
-  - PSPDFKit/Core (12.4.0-dev)
+  - PSPDFKit (12.3.1):
+    - PSPDFKit/Core (= 12.3.1)
+  - PSPDFKit/Core (12.3.1)
   - RCT-Folly (2021.07.22.00):
     - boost
     - DoubleConversion
@@ -333,7 +333,7 @@ PODS:
   - React-jsinspector (0.71.8)
   - React-logger (0.71.8):
     - glog
-  - react-native-pspdfkit (2.6.1):
+  - react-native-pspdfkit (2.7.0):
     - Instant
     - PSPDFKit
     - React
@@ -438,6 +438,8 @@ PODS:
   - RNScreens (3.20.0):
     - React-Core
     - React-RCTImage
+  - RNVectorIcons (10.0.0):
+    - React-Core
   - SocketRocket (0.6.0)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
@@ -471,10 +473,10 @@ DEPENDENCIES:
   - FlipperKit/SKIOSNetworkPlugin (= 0.125.0)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
-  - Instant (from `https://customers.pspdfkit.com/instant/nightly.podspec`)
+  - Instant (~> 12.3.1)
   - libevent (~> 2.1.12)
   - OpenSSL-Universal (= 1.1.1100)
-  - PSPDFKit (from `https://customers.pspdfkit.com/pspdfkit-ios/nightly.podspec`)
+  - PSPDFKit (~> 12.3.1)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
@@ -511,6 +513,7 @@ DEPENDENCIES:
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -526,8 +529,10 @@ SPEC REPOS:
     - Flipper-RSocket
     - FlipperKit
     - fmt
+    - Instant
     - libevent
     - OpenSSL-Universal
+    - PSPDFKit
     - SocketRocket
     - YogaKit
 
@@ -544,10 +549,6 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
-  Instant:
-    :podspec: https://customers.pspdfkit.com/instant/nightly.podspec
-  PSPDFKit:
-    :podspec: https://customers.pspdfkit.com/pspdfkit-ios/nightly.podspec
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTRequired:
@@ -616,6 +617,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-gesture-handler"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNVectorIcons:
+    :path: "../node_modules/react-native-vector-icons"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -637,10 +640,10 @@ SPEC CHECKSUMS:
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   hermes-engine: 47986d26692ae75ee7a17ab049caee8864f855de
-  Instant: 4951b6c445fc87741ab3e49e917d971472b42335
+  Instant: 1d43d2ac05f1ec51c04d896e492ad9d7efa0a20d
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
-  PSPDFKit: b2d8a35e8e2662c4a5c93f7c8463107dccfd7f6b
+  PSPDFKit: 25758dd47ee422ff60cf8761099f6cd583e3af6e
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
   RCTRequired: 8af6a32dfc2b65ec82193c2dee6e1011ff22ac2a
   RCTTypeSafety: bee9dd161c175896c680d47ef1d9eaacf2b587f4
@@ -655,7 +658,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 747911ab5921641b4ed7e4900065896597142125
   React-jsinspector: c712f9e3bb9ba4122d6b82b4f906448b8a281580
   React-logger: 342f358b8decfbf8f272367f4eacf4b6154061be
-  react-native-pspdfkit: 62b32a4e09f1bff1ad80b5adadb67ad55e6585f3
+  react-native-pspdfkit: 7717a2ca3bca954b76b41cb8db8b011d19c8abd2
   react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
   react-native-safe-area-context: b8979f5eda6ed5903d4dbc885be3846ea3daa753
   React-perflogger: d21f182895de9d1b077f8a3cd00011095c8c9100
@@ -675,10 +678,11 @@ SPEC CHECKSUMS:
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: f75d81410b40aaa99e71ae8f8bb7a88620c95042
   RNScreens: 218801c16a2782546d30bd2026bb625c0302d70f
+  RNVectorIcons: 8b5bb0fa61d54cd2020af4f24a51841ce365c7e9
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   Yoga: 065f0b74dba4832d6e328238de46eb72c5de9556
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 699a0bd86ccd09b1ff2b6bbb2c0feb65df1032ab
+PODFILE CHECKSUM: 8f4074fe503df8accbc576bd59103f77404efe36
 
 COCOAPODS: 1.12.1
