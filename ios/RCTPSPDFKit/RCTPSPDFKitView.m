@@ -196,11 +196,39 @@
     // Disable all interactions on the document itself
     _pdfController.interactions.allInteractions.enabled = enable;
     
+    // Hide all annotations, except for Ink and Highlight
+    PSPDFDocument *document = self.pdfController.document;
+    VALIDATE_DOCUMENT(document, nil);
+    NSDictionary<PSPDFDocumentPageNumber, NSArray<PSPDFAnnotation *> *> *inkAnnotations = [document allAnnotationsOfType:PSPDFAnnotationTypeInk];
     
+    for (id key in inkAnnotations) {
+        for (PSPDFAnnotation *annotation in inkAnnotations[key]) {
+            if (enable) {
+                annotation.flags |= PSPDFAnnotationFlagHidden;
+            } else {
+                annotation.flags &= ~PSPDFAnnotationFlagHidden;
+            }
+            [[NSNotificationCenter defaultCenter] postNotificationName:PSPDFAnnotationChangedNotification object:annotation userInfo:@{ PSPDFAnnotationChangedNotificationKeyPathKey : @[@"hidden"] }];
+        }
+    }
+    
+    NSDictionary<PSPDFDocumentPageNumber, NSArray<PSPDFAnnotation *> *> *highlightAnnotations = [document allAnnotationsOfType:PSPDFAnnotationTypeHighlight];
+    
+    for (id key in highlightAnnotations) {
+        for (PSPDFAnnotation *annotation in highlightAnnotations[key]) {
+            if (enable) {
+                annotation.flags |= PSPDFAnnotationFlagHidden;
+            } else {
+                annotation.flags &= ~PSPDFAnnotationFlagHidden;
+            }
+            [[NSNotificationCenter defaultCenter] postNotificationName:PSPDFAnnotationChangedNotification object:annotation userInfo:@{ PSPDFAnnotationChangedNotificationKeyPathKey : @[@"hidden"] }];
+        }
+    }
     
     // Disable ScrollView panGestureRecognizer
     return [_overrideScrolling enableInteraction:enable];
 }
+
 
 - (BOOL)enableDocumentInteraction {
     return [self enableDocumentInteraction:YES];
