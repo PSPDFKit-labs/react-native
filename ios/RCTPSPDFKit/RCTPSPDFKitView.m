@@ -12,6 +12,7 @@
 #import "RCTConvert+PSPDFAnnotation.h"
 #import "RCTConvert+PSPDFViewMode.h"
 #import "RCTConvert+UIBarButtonItem.h"
+#import "PSPDFKitReactNativeiOS-Swift.h"
 
 #define VALIDATE_DOCUMENT(document, ...) { if (!document.isValid) { NSLog(@"Document is invalid."); if (self.onDocumentLoadFailed) { self.onDocumentLoadFailed(@{@"error": @"Document is invalid."}); } return __VA_ARGS__; }}
 
@@ -71,6 +72,10 @@
     _pdfController = [[RCTPSPDFKitViewController alloc] init];
     _pdfController.delegate = self;
     _pdfController.annotationToolbarController.delegate = self;
+    
+    [_pdfController updateConfigurationWithBuilder:^(PSPDFConfigurationBuilder * _Nonnull builder) {
+        [builder overrideClass:PSPDFThumbnailViewController.self withClass:CustomThumbnailViewController.self];
+    }];
       
     _overrideScrolling = [OverrideScrolling new];
       
