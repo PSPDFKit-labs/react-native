@@ -693,6 +693,7 @@ public class PdfView extends FrameLayout {
                     } else {
                         result.put("value", text);
                     }
+                    result.put("isRequired", textFormElement.isRequired());
                 } else if (formElement instanceof EditableButtonFormElement) {
                     EditableButtonFormElement editableButtonFormElement = (EditableButtonFormElement) formElement;
                     if (editableButtonFormElement.isSelected()) {

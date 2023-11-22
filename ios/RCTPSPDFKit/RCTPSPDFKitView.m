@@ -314,7 +314,7 @@
   for (PSPDFFormElement *formElement in document.formParser.forms) {
     if ([formElement.fullyQualifiedFieldName isEqualToString:fullyQualifiedName]) {
       id formFieldValue = formElement.value;
-      return @{@"value": formFieldValue ?: [NSNull new]};
+      return @{@"value": formFieldValue ?: [NSNull new], @"isRequired": @(formElement.isRequired)};
     }
   }
   
