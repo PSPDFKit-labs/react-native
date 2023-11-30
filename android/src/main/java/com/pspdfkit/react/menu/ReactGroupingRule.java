@@ -63,6 +63,7 @@ public class ReactGroupingRule extends PresetMenuItemGroupingRule {
             }
 
         }
+        items.add(new MenuItem(R.id.pspdf__annotation_creation_toolbar_item_picker));
         //Add undo and redo to the end of the list
         items.add(new MenuItem(R.id.pspdf__annotation_creation_toolbar_item_undo));
         items.add(new MenuItem(R.id.pspdf__annotation_creation_toolbar_item_redo));
