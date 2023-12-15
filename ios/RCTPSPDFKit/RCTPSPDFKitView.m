@@ -41,6 +41,11 @@
     [_pdfController.closeButtonItem setAction:@selector(closeButtonPressed:)];
     _closeButton = _pdfController.closeButtonItem;
     
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)];
+        tapGesture.numberOfTapsRequired = 2;
+    [_pdfController.view addGestureRecognizer:tapGesture];
+    [_pdfController.interactions.selectAnnotation requireGestureRecognizerToFail:tapGesture];
+    
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationChangedNotification object:nil];
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationsAddedNotification object:nil];
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationsRemovedNotification object:nil];
@@ -49,6 +54,13 @@
   }
   
   return self;
+}
+
+- (void)handleTapGesture:(UITapGestureRecognizer *)sender {
+    if (sender.state == UIGestureRecognizerStateRecognized) {
+        CGPoint point = [sender locationInView:sender.view];
+        BOOL result = [_pdfController.interactions tryToPerformSmartZoomAtPoint:point inCoordinateSpace:sender.view.coordinateSpace];
+    }
 }
 
 - (void)removeFromSuperview {
@@ -90,6 +102,7 @@
    ]];
 
   self.pdfController.pageIndex = self.pageIndex;
+  self.pdfController.interactions.smartZoom.enabled = NO;
 }
 
 - (void)destroyViewControllerRelationship {
