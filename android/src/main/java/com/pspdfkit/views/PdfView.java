@@ -38,8 +38,10 @@ import com.facebook.react.uimanager.events.EventDispatcher;
 import com.pspdfkit.PSPDFKit;
 import com.pspdfkit.annotations.Annotation;
 import com.pspdfkit.annotations.AnnotationType;
+import com.pspdfkit.annotations.BorderStyle;
 import com.pspdfkit.annotations.configuration.AnnotationConfiguration;
 import com.pspdfkit.annotations.configuration.FreeTextAnnotationConfiguration;
+import com.pspdfkit.annotations.configuration.MeasurementDistanceAnnotationConfiguration;
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
 import com.pspdfkit.document.DocumentSaveOptions;
 import com.pspdfkit.document.ImageDocument;
@@ -72,6 +74,7 @@ import com.pspdfkit.ui.PdfUiFragment;
 import com.pspdfkit.ui.PdfUiFragmentBuilder;
 import com.pspdfkit.ui.fonts.Font;
 import com.pspdfkit.ui.fonts.FontManager;
+import com.pspdfkit.ui.inspector.views.BorderStylePreset;
 import com.pspdfkit.ui.search.PdfSearchView;
 import com.pspdfkit.ui.search.PdfSearchViewInline;
 import com.pspdfkit.ui.special_mode.controller.AnnotationTool;
@@ -553,6 +556,15 @@ public class PdfView extends FrameLayout {
                 }
             }
         }
+
+        List<Integer> customBorderStyle = List.of(5, 3, 1, 3);
+        List<BorderStylePreset> borderStylePresets = ((MeasurementDistanceAnnotationConfiguration) pdfFragment.getAnnotationConfiguration().get(AnnotationTool.MEASUREMENT_DISTANCE)).getBorderStylePresets();
+        borderStylePresets.add(new BorderStylePreset(BorderStyle.DASHED, customBorderStyle));
+        MeasurementDistanceAnnotationConfiguration measurementDistanceAnnotationConfiguration = MeasurementDistanceAnnotationConfiguration.builder(getContext())
+                .setBorderStylePresets(
+                        borderStylePresets
+                ).build();
+        pdfFragment.getAnnotationConfiguration().put(AnnotationTool.MEASUREMENT_DISTANCE, measurementDistanceAnnotationConfiguration);
     }
 
     public void removeFragment(boolean makeInactive) {

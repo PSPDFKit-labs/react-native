@@ -10,6 +10,19 @@
 import Foundation
 import PSPDFKit
 
+@objc public class Customization: NSObject {
+    
+    @objc public static func changeLineStyle() {
+        
+        let styleManager = PSPDFKit.SDK.shared.styleManager
+        let key = Annotation.ToolVariantID(tool: .line, variant: .distanceMeasurement)
+        
+        styleManager.setLastUsedValue([5,3,1,3] as NSArray, forProperty: #keyPath(LineAnnotation.__dashArray), forKey: key)
+        styleManager.setLastUsedValue(AbstractLineAnnotation.EndType.openArrow.rawValue, forProperty: #keyPath(LineAnnotation.lineEnd1), forKey: key)
+        styleManager.setLastUsedValue(AbstractLineAnnotation.EndType.openArrow.rawValue, forProperty: #keyPath(LineAnnotation.lineEnd2), forKey: key)
+    }
+}
+
 struct RNConfigurationHelper {
     var configuration: [String: Any]
 

@@ -12,6 +12,11 @@
 #import "RCTConvert+PSPDFAnnotation.h"
 #import "RCTConvert+PSPDFViewMode.h"
 #import "RCTConvert+UIBarButtonItem.h"
+#if __has_include("PSPDFKitReactNativeiOS-Swift.h")
+#import "PSPDFKitReactNativeiOS-Swift.h"
+#else
+#import <PSPDFKitReactNativeiOS/PSPDFKitReactNativeiOS-Swift.h>
+#endif
 
 #define VALIDATE_DOCUMENT(document, ...) { if (!document.isValid) { NSLog(@"Document is invalid."); if (self.onDocumentLoadFailed) { self.onDocumentLoadFailed(@{@"error": @"Document is invalid."}); } return __VA_ARGS__; }}
 
@@ -48,6 +53,7 @@
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(spreadIndexDidChange:) name:PSPDFDocumentViewControllerSpreadIndexDidChangeNotification object:nil];
   }
   
+  [Customization changeLineStyle];
   return self;
 }
 
