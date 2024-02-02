@@ -17,7 +17,7 @@ import PSPDFKit
         let styleManager = PSPDFKit.SDK.shared.styleManager
         let key = Annotation.ToolVariantID(tool: .line, variant: .distanceMeasurement)
         
-        styleManager.setLastUsedValue([2] as NSArray, forProperty: #keyPath(LineAnnotation.__dashArray), forKey: key)
+        styleManager.setLastUsedValue([5,3,1,3] as NSArray, forProperty: #keyPath(LineAnnotation.__dashArray), forKey: key)
         styleManager.setLastUsedValue(AbstractLineAnnotation.EndType.openArrow.rawValue, forProperty: #keyPath(LineAnnotation.lineEnd1), forKey: key)
         styleManager.setLastUsedValue(AbstractLineAnnotation.EndType.openArrow.rawValue, forProperty: #keyPath(LineAnnotation.lineEnd2), forKey: key)
     }
