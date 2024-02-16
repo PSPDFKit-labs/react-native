@@ -46,6 +46,10 @@
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationsRemovedNotification object:nil];
 
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(spreadIndexDidChange:) name:PSPDFDocumentViewControllerSpreadIndexDidChangeNotification object:nil];
+
+    [_pdfController updateConfigurationWithBuilder:^(PSPDFConfigurationBuilder * _Nonnull builder) {
+          builder.signatureStore = [PSPDFKeychainSignatureStore new];
+    }];
   }
   
   return self;

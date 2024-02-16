@@ -38,6 +38,7 @@ export class ProgrammaticFormFilling extends BaseExampleAutoHidingHeaderComponen
           disableAutomaticSaving={true}
           configuration={{
             backgroundColor: processColor('lightgrey'),
+            signatureSavingStrategy: 'alwaysSave'
           }}
           onAnnotationsChanged={(event: { error: any }) => {
             if (event.error) {
