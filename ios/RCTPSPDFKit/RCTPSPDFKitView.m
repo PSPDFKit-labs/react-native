@@ -32,7 +32,7 @@
     _pdfController = [[RCTPSPDFKitViewController alloc] init];
     _pdfController.delegate = self;
     _pdfController.annotationToolbarController.delegate = self;
-    
+
     // Store the closeButton's target and selector in order to call it later.
     _closeButtonAttributes = @{@"target" : _pdfController.closeButtonItem.target,
                               @"action" : NSStringFromSelector(_pdfController.closeButtonItem.action)};
@@ -40,26 +40,47 @@
     [_pdfController.closeButtonItem setTarget:self];
     [_pdfController.closeButtonItem setAction:@selector(closeButtonPressed:)];
     _closeButton = _pdfController.closeButtonItem;
-    
+      
     UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)];
         tapGesture.numberOfTapsRequired = 2;
-    [_pdfController.view addGestureRecognizer:tapGesture];
-    [_pdfController.interactions.selectAnnotation requireGestureRecognizerToFail:tapGesture];
-    
+        [_pdfController.view addGestureRecognizer:tapGesture];
+        [_pdfController.interactions.selectAnnotation requireGestureRecognizerToFail:tapGesture];
+        
+        UITapGestureRecognizer *tapGestureSingle = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGestureSingle:)];
+        tapGestureSingle.numberOfTapsRequired = 1;
+        [_pdfController.view addGestureRecognizer:tapGestureSingle];
+        [_pdfController.interactions.toggleUserInterface requireGestureRecognizerToFail:tapGestureSingle];
+        [tapGestureSingle requireGestureRecognizerToFail:tapGesture];
+        
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationChangedNotification object:nil];
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationsAddedNotification object:nil];
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationsRemovedNotification object:nil];
-
+    
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(spreadIndexDidChange:) name:PSPDFDocumentViewControllerSpreadIndexDidChangeNotification object:nil];
-  }
-  
-  return self;
+    }
+    
+    
+    return self;}
+
+- (void)handleTapGestureSingle:(UITapGestureRecognizer *)sender {
+    
+    if (sender.state == UIGestureRecognizerStateRecognized) {
+        CGPoint point = [sender locationInView:sender.view];
+        BOOL success = [_pdfController.interactions tryToSelectAnnotationAtPoint:point
+                                                               inCoordinateSpace:sender.view.coordinateSpace];
+        if (!success) {
+            [_pdfController.interactions tryToToggleUserInterfaceAtPoint:point 
+                                                       inCoordinateSpace:sender.view.coordinateSpace];
+        }
+    }
 }
 
 - (void)handleTapGesture:(UITapGestureRecognizer *)sender {
+    
     if (sender.state == UIGestureRecognizerStateRecognized) {
         CGPoint point = [sender locationInView:sender.view];
-        BOOL result = [_pdfController.interactions tryToPerformSmartZoomAtPoint:point inCoordinateSpace:sender.view.coordinateSpace];
+        [_pdfController.interactions tryToPerformSmartZoomAtPoint:point 
+                                                inCoordinateSpace:sender.view.coordinateSpace];
     }
 }
 
@@ -103,6 +124,7 @@
 
   self.pdfController.pageIndex = self.pageIndex;
   self.pdfController.interactions.smartZoom.enabled = NO;
+  self.pdfController.interactions.selectAnnotation.enabled = NO;
 }
 
 - (void)destroyViewControllerRelationship {
