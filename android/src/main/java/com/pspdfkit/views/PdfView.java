@@ -553,6 +553,9 @@ public class PdfView extends FrameLayout {
                 }
             }
         }
+
+        final SignatureStorage storage = DatabaseSignatureStorage.withName(getContext(), "SignatureDatabase");
+        pdfFragment.setSignatureStorage(storage);
     }
 
     public void removeFragment(boolean makeInactive) {
