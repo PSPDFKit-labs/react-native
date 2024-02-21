@@ -29,6 +29,7 @@ export class PSPDFKitViewComponent extends BaseExampleAutoHidingHeaderComponent 
             toolbarTitle: 'My Awesome Report',
             backgroundColor: processColor('lightgrey'),
             useParentNavigationBar: false,
+            documentPassword: 'myPassword'
           }}
           fragmentTag="PDF1"
           showNavigationButtonInToolbar={true}
