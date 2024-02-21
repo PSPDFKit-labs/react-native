@@ -65,6 +65,8 @@ import com.pspdfkit.react.events.PdfViewNavigationButtonClickedEvent;
 import com.pspdfkit.react.events.PdfViewStateChangedEvent;
 import com.pspdfkit.react.helper.DocumentJsonDataProvider;
 import com.pspdfkit.react.helper.MeasurementHelper;
+import com.pspdfkit.signatures.storage.DatabaseSignatureStorage;
+import com.pspdfkit.signatures.storage.SignatureStorage;
 import com.pspdfkit.react.helper.PSPDFKitUtils;
 import com.pspdfkit.ui.DocumentDescriptor;
 import com.pspdfkit.ui.PdfFragment;
