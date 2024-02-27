@@ -9,4 +9,8 @@
         <item name="colorAccent">@color/color_primary_dark</item>
     </style>
 
+    <style name="PSPDFKit.Annotation">
+        <item name="pspdf__linkAnnotationHighlightBackgroundColor">@android:color/transparent</item>
+    </style>
+
 </resources>
