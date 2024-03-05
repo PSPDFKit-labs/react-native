@@ -61,6 +61,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray <NSString *> *)getLeftBarButtonItemsForViewMode:(NSString *)viewMode;
 - (NSArray <NSString *> *)getRightBarButtonItemsForViewMode:(NSString *)viewMode;
 
+- (BOOL)addElectronicSignatureField:(NSDictionary *)jsonSignatureData error:(NSError *_Nullable *)error;
+
 @end
 
 NS_ASSUME_NONNULL_END
