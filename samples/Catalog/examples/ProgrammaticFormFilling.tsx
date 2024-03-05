@@ -231,13 +231,15 @@ export class ProgrammaticFormFilling extends BaseExampleAutoHidingHeaderComponen
           <View style={styles.marginLeft}>
             <Button
               onPress={async () => {
-                // Get the First Name Value.
-                const firstNameValue =
-                  await this.pdfRef.current?.getFormFieldValue('Name_Last');
-                Alert.alert('PSPDFKit', JSON.stringify(firstNameValue));
+                const esData = {
+                  bbox: [120, 120, 200, 100],
+                  fullyQualifiedName: "My Signature Field",
+                  pageIndex: 0,
+                };
+                this.pdfRef.current?.addElectronicSignatureField(esData);
               }}
-              title="Get Last Name Value"
-              accessibilityLabel="Get Last Name Value"
+              title="Add Signature"
+              accessibilityLabel="Add Signature"
             />
           </View>
         </View>

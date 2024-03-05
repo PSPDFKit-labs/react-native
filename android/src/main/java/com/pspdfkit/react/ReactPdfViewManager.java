@@ -76,6 +76,7 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
     public static final int COMMAND_EXPORT_XFDF = 24;
     public static final int COMMAND_SET_ANNOTATION_FLAGS = 25;
     public static final int COMMAND_GET_ANNOTATION_FLAGS = 26;
+    public static final int COMMAND_ADD_ELECTRONIC_SIGNATURE = 27;
 
     private final CompositeDisposable annotationDisposables = new CompositeDisposable();
 
@@ -138,6 +139,7 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
         commandMap.put("exportXFDF", COMMAND_EXPORT_XFDF);
         commandMap.put("setAnnotationFlags", COMMAND_SET_ANNOTATION_FLAGS);
         commandMap.put("getAnnotationFlags", COMMAND_GET_ANNOTATION_FLAGS);
+        commandMap.put("addElectronicSignatureField", COMMAND_ADD_ELECTRONIC_SIGNATURE);
         return commandMap;
     }
 
@@ -473,6 +475,16 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
                     root.exportXFDF(requestId, args.getString(1));
                 }
                 break;
+            case COMMAND_ADD_ELECTRONIC_SIGNATURE:
+                if (args != null) {
+                    final int requestId = args.getInt(0);
+                    try {
+                        boolean result = root.addElectronicSignatureField(requestId, args.getMap(1));
+                        root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, result));
+                    } catch (Exception e) {
+                        root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, e));
+                    }
+                }
         }
     }
 

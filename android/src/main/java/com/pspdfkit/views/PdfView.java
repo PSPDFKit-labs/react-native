@@ -20,6 +20,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -66,6 +67,7 @@ import com.pspdfkit.forms.ChoiceFormElement;
 import com.pspdfkit.forms.ComboBoxFormElement;
 import com.pspdfkit.forms.EditableButtonFormElement;
 import com.pspdfkit.forms.FormField;
+import com.pspdfkit.forms.SignatureFormConfiguration;
 import com.pspdfkit.forms.TextFormElement;
 import com.pspdfkit.internal.model.ImageDocumentImpl;
 import com.pspdfkit.listeners.OnVisibilityChangedListener;
@@ -844,6 +846,30 @@ public class PdfView extends FrameLayout {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe((instantJson) -> eventDispatcher.dispatchEvent(new PdfViewDataReturnedEvent(getId(), requestId, true)),
                 (throwable) -> eventDispatcher.dispatchEvent(new PdfViewDataReturnedEvent(getId(), requestId, throwable)));
+    }
+
+    public boolean addElectronicSignatureField(final int requestId, ReadableMap signatureData) throws Exception {
+        if (fragment != null) {
+            try {
+                JSONObject json = new JSONObject(signatureData.toHashMap());
+                int page = json.getInt("pageIndex");
+                JSONArray bbox = json.getJSONArray("bbox");
+                RectF rectFSignatureFormConfiguration = new RectF(
+                        bbox.getLong(0), // left
+                        bbox.getLong(1), // top
+                        bbox.getLong(2), // right
+                        bbox.getLong(3) // bottom
+                );
+                SignatureFormConfiguration signatureFormConfiguration = new SignatureFormConfiguration.Builder(page, rectFSignatureFormConfiguration)
+                        .build();
+                document.getFormProvider().addFormElementToPage(json.getString("fullyQualifiedName"), signatureFormConfiguration);
+                return false;
+            } catch (Exception e) {
+                eventDispatcher.dispatchEvent(new PdfViewDocumentSaveFailedEvent(getId(), e.getMessage()));
+                throw e;
+            }
+        }
+        return false;
     }
 
     public Disposable removeAnnotation(final int requestId, ReadableMap annotation) {
