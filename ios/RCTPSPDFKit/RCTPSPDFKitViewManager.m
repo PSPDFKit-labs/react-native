@@ -234,6 +234,19 @@ RCT_CUSTOM_VIEW_PROPERTY(annotationContextualMenu, NSDictionary, RCTPSPDFKitView
   }
 }
 
+RCT_EXPORT_METHOD(addElectronicSignatureField:(NSDictionary *)jsonSignatureData reactTag:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    RCTPSPDFKitView *component = (RCTPSPDFKitView *)[self.bridge.uiManager viewForReactTag:reactTag];
+    NSError *error;
+      BOOL success = [component addElectronicSignatureField:jsonSignatureData error:&error];
+    if (success) {
+      resolve(@(success));
+    } else {
+      reject(@"error", @"Failed to add ES field.", error);
+    }
+  });
+}
+
 RCT_EXPORT_METHOD(enterAnnotationCreationMode:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   dispatch_async(dispatch_get_main_queue(), ^{
     RCTPSPDFKitView *component = (RCTPSPDFKitView *)[self.bridge.uiManager viewForReactTag:reactTag];

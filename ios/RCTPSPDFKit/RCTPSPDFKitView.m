@@ -258,6 +258,27 @@
   return @{@"annotations" : annotationsJSON};
 }
 
+- (BOOL)addElectronicSignatureField:(NSDictionary *)signatureData error:(NSError *_Nullable *)error {
+    
+    PSPDFSignatureFormElement *signatureFormElement = [[PSPDFSignatureFormElement alloc] init];
+    // Position it in the document.
+    signatureFormElement.boundingBox = CGRectMake([signatureData[@"bbox"][0] floatValue],
+                                                  [signatureData[@"bbox"][1] floatValue],
+                                                  [signatureData[@"bbox"][2] floatValue],
+                                                  [signatureData[@"bbox"][3] floatValue]);
+                                                  
+    signatureFormElement.pageIndex = [signatureData[@"pageIndex"] integerValue];
+
+    PSPDFDocument *document = self.pdfController.document;
+    VALIDATE_DOCUMENT(document, NO)
+    PSPDFDocumentProvider *documentProvider = document.documentProviders.firstObject;
+    PSPDFSignatureFormField *signatureFormField = [PSPDFSignatureFormField insertedSignatureFieldWithFullyQualifiedName:signatureData[@"fullyQualifiedName"] documentProvider:documentProvider formElement:signatureFormElement error:error];
+    if (!signatureFormField) {
+        return NO;
+    }
+    return YES;
+}
+
 - (BOOL)addAnnotation:(id)jsonAnnotation error:(NSError *_Nullable *)error {
   NSData *data;
   if ([jsonAnnotation isKindOfClass:NSString.class]) {

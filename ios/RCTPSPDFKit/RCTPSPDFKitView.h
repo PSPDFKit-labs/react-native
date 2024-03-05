@@ -74,6 +74,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// Annotation Contextual Menu Customization
 - (void)setAnnotationContextualMenuItems:(NSDictionary *)items;
 
+- (BOOL)addElectronicSignatureField:(NSDictionary *)jsonSignatureData error:(NSError *_Nullable *)error;
+
 @end
 
 NS_ASSUME_NONNULL_END
