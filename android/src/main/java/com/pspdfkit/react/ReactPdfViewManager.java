@@ -63,8 +63,9 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
     public static final int COMMAND_REMOVE_FRAGMENT = 12;
     public static final int COMMAND_SET_TOOLBAR_MENU_ITEMS = 13;
     public static final int COMMAND_REMOVE_ANNOTATIONS = 14;
-    public  static final int COMMAND_SET_MEASUREMENT_SCALE = 17;
+    public static final int COMMAND_SET_MEASUREMENT_SCALE = 17;
     public static final int COMMAND_SET_MEASUREMENT_PRECISION = 16;
+    public static final int COMMAND_ADD_ELECTRONIC_SIGNATURE = 19;
 
     private final CompositeDisposable annotationDisposables = new CompositeDisposable();
 
@@ -115,6 +116,7 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
         commandMap.put("setToolbarMenuItems", COMMAND_SET_TOOLBAR_MENU_ITEMS);
         commandMap.put("setMeasurementScale", COMMAND_SET_MEASUREMENT_SCALE);
         commandMap.put("setMeasurementPrecision", COMMAND_SET_MEASUREMENT_PRECISION);
+        commandMap.put("addElectronicSignatureField", COMMAND_ADD_ELECTRONIC_SIGNATURE);
         return commandMap;
     }
 
@@ -340,6 +342,17 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
                     final int requestId = args.getInt(0);
                     try {
                         boolean result = root.setMeasurementPrecision(args.getString(1));
+                        root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, result));
+                    } catch (Exception e) {
+                        root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, e));
+                    }
+                }
+                break;
+            case COMMAND_ADD_ELECTRONIC_SIGNATURE:
+                if (args != null) {
+                    final int requestId = args.getInt(0);
+                    try {
+                        boolean result = root.addElectronicSignatureField(requestId, args.getMap(1));
                         root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, result));
                     } catch (Exception e) {
                         root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, e));
