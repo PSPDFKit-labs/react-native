@@ -247,6 +247,19 @@ RCT_EXPORT_METHOD(addElectronicSignatureField:(NSDictionary *)jsonSignatureData 
   });
 }
 
+RCT_EXPORT_METHOD(addFormField:(NSDictionary *)jsonFormData reactTag:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    RCTPSPDFKitView *component = (RCTPSPDFKitView *)[self.bridge.uiManager viewForReactTag:reactTag];
+    NSError *error;
+      BOOL success = [component addFormField:jsonFormData error:&error];
+    if (success) {
+      resolve(@(success));
+    } else {
+      reject(@"error", @"Failed to add form field.", error);
+    }
+  });
+}
+
 RCT_EXPORT_METHOD(enterAnnotationCreationMode:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   dispatch_async(dispatch_get_main_queue(), ^{
     RCTPSPDFKitView *component = (RCTPSPDFKitView *)[self.bridge.uiManager viewForReactTag:reactTag];

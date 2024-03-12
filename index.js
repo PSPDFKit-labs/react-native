@@ -321,6 +321,38 @@ class PSPDFKitView extends React.Component {
   };
 
   /**
+   * Adds a new form field to the current document.
+   *
+   * @method addFormField
+   * @memberof PSPDFKitView
+   * @param { object } data The data of the form field to add
+   */
+  addFormField = function (data) {
+      if (Platform.OS === 'android') {
+        let requestId = this._nextRequestId++;
+        let requestMap = this._requestMap;
+  
+        // We create a promise here that will be resolved once onDataReturned is called.
+        let promise = new Promise(function (resolve, reject) {
+          requestMap[requestId] = { resolve: resolve, reject: reject };
+        });
+  
+        UIManager.dispatchViewManagerCommand(
+          findNodeHandle(this.refs.pdfView),
+          this._getViewManagerConfig('RCTPSPDFKitView').Commands.addFormField,
+          [requestId, data],
+        );
+  
+        return promise;
+      } else if (Platform.OS === 'ios') {
+        return NativeModules.PSPDFKitViewManager.addFormField(
+          data,
+          findNodeHandle(this.refs.pdfView),
+        );
+      }
+    };
+
+  /**
    * Adds a new electronic signature field to the current document.
    *
    * @method addElectronicSignatureField

@@ -279,6 +279,24 @@
     return YES;
 }
 
+- (BOOL)addFormField:(NSDictionary *)jsonFormData error:(NSError *_Nullable *)error {
+
+    PSPDFTextFieldFormElement *formField = [PSPDFTextFieldFormElement new];
+    formField.boundingBox = CGRectMake([jsonFormData[@"bbox"][0] floatValue],
+                                                  [jsonFormData[@"bbox"][1] floatValue],
+                                                  [jsonFormData[@"bbox"][2] floatValue],
+                                                  [jsonFormData[@"bbox"][3] floatValue]);
+
+    formField.pageIndex = [jsonFormData[@"pageIndex"] integerValue];
+    PSPDFDocumentProvider *documentProvider = _pdfController.document.documentProviders.firstObject;
+    PSPDFTextFormField *formFieldResult = [PSPDFTextFormField insertedTextFieldWithFullyQualifiedName:jsonFormData[@"fullyQualifiedName"] documentProvider:documentProvider formElement:formField error:error];
+
+    if (!formFieldResult) {
+      return NO;
+    }
+    return YES;
+}
+
 - (BOOL)addAnnotation:(id)jsonAnnotation error:(NSError *_Nullable *)error {
   NSData *data;
   if ([jsonAnnotation isKindOfClass:NSString.class]) {

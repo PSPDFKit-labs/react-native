@@ -878,6 +878,14 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      */
     getAnnotations: (pageIndex: number, type?: string) => Promise<any>;
     /**
+     * Adds a new form field to the current document.
+     *
+     * @method addFormField
+     * @memberof PSPDFKitView
+     * @param { object } data The data of the form field to add
+     */
+    addFormField: (data: object) => any;
+    /**
      * Adds a new electronic signature field to the current document.
      *
      * @method addElectronicSignatureField

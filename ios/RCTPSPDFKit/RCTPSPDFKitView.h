@@ -75,6 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setAnnotationContextualMenuItems:(NSDictionary *)items;
 
 - (BOOL)addElectronicSignatureField:(NSDictionary *)jsonSignatureData error:(NSError *_Nullable *)error;
+- (BOOL)addFormField:(NSDictionary *)jsonFormData error:(NSError *_Nullable *)error;
 
 @end
 

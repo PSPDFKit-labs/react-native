@@ -232,14 +232,21 @@ export class ProgrammaticFormFilling extends BaseExampleAutoHidingHeaderComponen
             <Button
               onPress={async () => {
                 const esData = {
-                  bbox: [120, 120, 200, 100],
+                  bbox: [60, 30, 200, 100],
                   fullyQualifiedName: "My Signature Field",
                   pageIndex: 0,
                 };
                 this.pdfRef.current?.addElectronicSignatureField(esData);
+
+                const formData = {
+                  bbox: [270, 60, 400, 30],
+                  fullyQualifiedName: "My Form Field",
+                  pageIndex: 0,
+                };
+                this.pdfRef.current?.addFormField(formData);
               }}
-              title="Add Signature"
-              accessibilityLabel="Add Signature"
+              title="Add Form & Signature"
+              accessibilityLabel="Add Form & Signature"
             />
           </View>
         </View>

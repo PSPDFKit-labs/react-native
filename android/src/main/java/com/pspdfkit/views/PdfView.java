@@ -872,6 +872,31 @@ public class PdfView extends FrameLayout {
         return false;
     }
 
+    public boolean addFormField(final int requestId, ReadableMap formData) throws Exception {
+        if (fragment != null) {
+            try {
+                JSONObject json = new JSONObject(formData.toHashMap());
+                int page = json.getInt("pageIndex");
+                JSONArray bbox = json.getJSONArray("bbox");
+                RectF rectFFormConfiguration = new RectF(
+                        bbox.getLong(0), // left
+                        bbox.getLong(1), // top
+                        bbox.getLong(2), // right
+                        bbox.getLong(3) // bottom
+                );
+
+                TextFormConfiguration formFieldConfiguration = new TextFormConfiguration.Builder(page, rectFFormConfiguration)
+                        .build();
+                document.getFormProvider().addFormElementToPage(json.getString("fullyQualifiedName"), formFieldConfiguration);
+                return false;
+            } catch (Exception e) {
+                eventDispatcher.dispatchEvent(new PdfViewDocumentSaveFailedEvent(getId(), e.getMessage()));
+                throw e;
+            }
+        }
+        return false;
+    }
+
     public Disposable removeAnnotation(final int requestId, ReadableMap annotation) {
         return getCurrentPdfFragment().map(PdfFragment::getDocument).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
