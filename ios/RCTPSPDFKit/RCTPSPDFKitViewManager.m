@@ -59,6 +59,12 @@ RCT_CUSTOM_VIEW_PROPERTY(document, PSPDFDocument, RCTPSPDFKitView) {
       // Update measurement scale and precision after document is created and remove it from memory after reading
       [PspdfkitMeasurementConvertor setConfig: _configuration document: view.pdfController.document];
       _configuration = nil;
+
+      PSPDFMeasurementScale *scale = [[PSPDFMeasurementScale alloc] initWithFrom:1 unitFrom:PSPDFUnitFromInch to:2 unitTo:PSPDFUnitToCentimeter];
+      PSPDFMeasurementValueConfiguration *config = [[PSPDFMeasurementValueConfiguration alloc] initWithName:nil scale:scale precision:PSPDFMeasurementPrecisionFourDecimalPlaces];
+      [view.pdfController.document setDefaultMeasurementValueConfiguration:config];
+      [view.pdfController.document setActiveMeasurementValueConfiguration:config];
+
       if(view.onDocumentLoaded) {
           view.onDocumentLoaded(@{});
       }

@@ -40,6 +40,9 @@ import com.pspdfkit.annotations.Annotation;
 import com.pspdfkit.annotations.AnnotationType;
 import com.pspdfkit.annotations.configuration.AnnotationConfiguration;
 import com.pspdfkit.annotations.configuration.FreeTextAnnotationConfiguration;
+import com.pspdfkit.annotations.measurements.MeasurementPrecision;
+import com.pspdfkit.annotations.measurements.MeasurementValueConfiguration;
+import com.pspdfkit.annotations.measurements.Scale;
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
 import com.pspdfkit.document.DocumentSaveOptions;
 import com.pspdfkit.document.ImageDocument;
@@ -553,6 +556,11 @@ public class PdfView extends FrameLayout {
                 }
             }
         }
+
+        Scale scale = new Scale(1.0f, Scale.UnitFrom.IN, 2.0f, Scale.UnitTo.CM);
+        MeasurementValueConfiguration config = new MeasurementValueConfiguration(null, scale, MeasurementPrecision.FOUR_DP);
+        pdfFragment.getMeasurementValueConfigurationEditor().add(config, true);
+        pdfFragment.setSelectedMeasurementValueConfiguration(config);
     }
 
     public void removeFragment(boolean makeInactive) {
