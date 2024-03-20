@@ -7,6 +7,27 @@
         <item name="colorPrimary">@color/color_primary</item>
         <item name="colorPrimaryDark">@color/color_primary_dark</item>
         <item name="colorAccent">@color/color_primary_dark</item>
+        <item name="pspdf__mainToolbarStyle">@style/AppTheme.MainToolbarStyle</item>
+        <item name="pspdf__actionBarIconsStyle">@style/AppTheme.ActionBarIconsStyle</item>
+        <item name="pspdf__contextualToolbarStyle">@style/AppTheme.ContextualToolbarStyle</item>
+    </style>
+
+    <style name="AppTheme.MainToolbarStyle">
+        <item name="pspdf__backgroundColor">#063970</item>
+        <item name="pspdf__toolbarPopupTheme">@style/ThemeOverlay.AppCompat.Dark</item>
+    </style>
+
+    <style name="AppTheme.ActionBarIconsStyle">
+        <item name="pspdf__iconsColor">#ffffff</item>
+        <item name="pspdf__iconsColorActivated">#000000</item>
+        <item name="pspdf__defaultTextColor">#ffffff</item>
+    </style>
+
+    <style name="AppTheme.ContextualToolbarStyle">
+        <item name="pspdf__backgroundColor">#063970</item>
+        <item name="pspdf__submenuBackgroundColor">#063970</item>
+        <item name="pspdf__iconsColor">@color/pspdf__color_white</item>
+        <item name="pspdf__iconsColorActivated">@color/pspdf__color_white</item>
     </style>
 
 </resources>
