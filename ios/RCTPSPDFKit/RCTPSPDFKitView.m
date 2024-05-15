@@ -168,7 +168,9 @@
     NSData *annotationData = [annotation generateInstantJSONWithError:NULL];
     if (annotationData != nil) {
         NSDictionary *annotationDictionary = [NSJSONSerialization JSONObjectWithData:annotationData options:kNilOptions error:NULL];
-        self.onAnnotationTapped(annotationDictionary);
+        NSMutableDictionary *updatedDictionary = [[NSMutableDictionary alloc] initWithDictionary:annotationDictionary];
+        [updatedDictionary setObject:annotation.uuid forKey:@"uuid"];
+        self.onAnnotationTapped(updatedDictionary);
     }
   }
   return self.disableDefaultActionForTappedAnnotations;
