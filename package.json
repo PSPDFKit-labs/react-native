@@ -56,5 +56,9 @@
   },
   "engines": {
     "node": ">=16"
-  }
+  },
+  "files": [
+    "ios/",
+    "android/"
+  ]
 }
