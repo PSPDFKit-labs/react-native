@@ -59,6 +59,15 @@
   },
   "files": [
     "ios/",
-    "android/"
+    "android/",
+    "lib/",
+    "src/",
+    "types/",
+    "windows/",
+    "babel.config.js",
+    "index.js",
+    "react-native-pspdfkit.podspec",
+    "tsconfig-types.json",
+    "tsconfig.json"
   ]
 }
