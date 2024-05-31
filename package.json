@@ -56,5 +56,20 @@
   },
   "engines": {
     "node": ">=16"
-  }
+  },
+  "files": [
+    "ios/",
+    "android/",
+    "lib/",
+    "src/",
+    "types/",
+    "windows/",
+    "babel.config.js",
+    "index.js",
+    "react-native-pspdfkit.podspec",
+    "tsconfig-types.json",
+    "tsconfig.json",
+    "package.json",
+    "License-Evaluation.pdf"
+  ]
 }
