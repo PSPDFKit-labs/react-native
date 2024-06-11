@@ -140,6 +140,8 @@
 }
 
 - (BOOL)exitCurrentlyActiveMode {
+  PSPDFPageView * pageView = self.pdfController.visiblePageViews[0];
+  pageView.selectedAnnotations = @[];
   if ([self.pdfController.annotationToolbarController isToolbarVisible]) {
     return [self.pdfController.annotationToolbarController hideToolbarAnimated:YES completion:NULL];
   }
