@@ -751,6 +751,10 @@ public class PdfView extends FrameLayout {
 
     public void exitCurrentlyActiveMode() {
         pendingFragmentActions.add(getCurrentPdfFragment()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(PdfFragment::clearSelectedAnnotations));
+            
+        pendingFragmentActions.add(getCurrentPdfFragment()
             .observeOn(Schedulers.io())
             .subscribe(PdfFragment::exitCurrentlyActiveMode));
     }
