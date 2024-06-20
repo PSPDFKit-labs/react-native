@@ -22,10 +22,12 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Choreographer;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
@@ -34,6 +36,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -202,6 +205,8 @@ public class PdfView extends FrameLayout {
     @Nullable
     private ReadableArray measurementValueConfigurations;
 
+    private FragmentContainerView fragmentContainerView;
+
     public PdfView(@NonNull Context context) {
         super(context);
         init();
@@ -223,6 +228,7 @@ public class PdfView extends FrameLayout {
     }
 
     private void init() {
+        fragmentContainerView = (FragmentContainerView) LayoutInflater.from(getContext()).inflate(R.layout.pspdf__fragment_container, null);
         pdfViewModeController = new PdfViewModeController(this);
 
         Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
@@ -330,7 +336,6 @@ public class PdfView extends FrameLayout {
             documentOpeningDisposable.dispose();
         }
         this.documentPath = documentPath;
-        updateState();
 
         if (Uri.parse(documentPath).getScheme().toLowerCase(Locale.getDefault()).contains("http")) {
             String outputFilePath = this.remoteDocumentConfiguration != null &&
@@ -560,50 +565,70 @@ public class PdfView extends FrameLayout {
                     prepareFragment(pdfFragment, true);
                 }
             }
-
-            if (pdfFragment.getDocument() != null) {
-                if (pageIndex <= document.getPageCount()-1) {
-                    pdfFragment.setPageIndex(pageIndex, true);
-                }
-            }
-
             fragment = pdfFragment;
-            pdfUiFragmentGetter.onNext(Collections.singletonList(pdfFragment));
         }
+    }
+
+    private void postFragmentSetup(PdfUiFragment pdfFragment) {
+        updateState();
+        attachPdfFragmentListeners(pdfFragment);
+        updateAnnotationConfiguration();
+        if (pdfFragment.getDocument() != null) {
+            if (pageIndex <= document.getPageCount()-1) {
+                pdfFragment.setPageIndex(pageIndex, true);
+            }
+        }
+        pdfUiFragmentGetter.onNext(Collections.singletonList(pdfFragment));
     }
 
     private void prepareFragment(final PdfUiFragment pdfUiFragment, final boolean attachFragment) {
         if (attachFragment) {
-
-            getRootView().getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            fragmentContainerView.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
                 @Override
-                public void onGlobalLayout() {
-                    // Reattach the fragment if running on API >= 34, there is a compatibility issue with React Native StackScreen fragments.
-                    if (Build.VERSION.SDK_INT >= 34) {
-                        fragmentManager.beginTransaction()
-                                .detach(pdfUiFragment)
-                                .commitNow();
+                public void onViewAttachedToWindow(@NonNull View view) {
+                    Handler mainHandler = new Handler(getContext().getMainLooper());
+                    Runnable myRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                fragmentManager
+                                        .beginTransaction()
+                                        .add(R.id.pspdf__fragment_container
+                                                , pdfUiFragment)
+                                        .commitNow();
+                                postFragmentSetup(pdfUiFragment);
+                            } catch (Exception e) {
+                                // Could not add fragment
+                            }
+                        }
+                    };
+                    mainHandler.post(myRunnable);
+                }
 
-                        fragmentManager.beginTransaction()
-                                .attach(pdfUiFragment)
-                                .commitNow();
-
-                        addView(pdfUiFragment.getView(), LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-                        attachPdfFragmentListeners(pdfUiFragment);
-                        updateAnnotationConfiguration();
-                    }
-                    getRootView().getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                @Override
+                public void onViewDetachedFromWindow(@NonNull View view) {
+                    Handler mainHandler = new Handler(getContext().getMainLooper());
+                    Runnable myRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                fragmentManager
+                                        .beginTransaction()
+                                        .remove(pdfUiFragment)
+                                        .commitNow();
+                            } catch (Exception e) {
+                                // Could not remove fragment
+                            }
+                        }
+                    };
+                    mainHandler.post(myRunnable);
                 }
             });
-
-            fragmentManager.beginTransaction()
-                .add(pdfUiFragment, fragmentTag)
-                .commitNow();
-
-            View fragmentView = pdfUiFragment.getView();
-            addView(fragmentView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+            removeAllViews();
+            addView(fragmentContainerView);
+        } else {
+            attachPdfFragmentListeners(pdfUiFragment);
         }
-        attachPdfFragmentListeners(pdfUiFragment);
     }
 
     private void attachPdfFragmentListeners(final PdfUiFragment pdfUiFragment) {
