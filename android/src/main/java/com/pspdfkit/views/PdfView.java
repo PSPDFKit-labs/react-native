@@ -22,12 +22,14 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.IBinder;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Choreographer;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -750,6 +752,11 @@ public class PdfView extends FrameLayout {
     }
 
     public void exitCurrentlyActiveMode() {
+
+        IBinder windowToken = getWindowToken();
+        InputMethodManager inputMethodManager = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(windowToken, 0);
+
         pendingFragmentActions.add(getCurrentPdfFragment()
             .observeOn(Schedulers.io())
             .subscribe(PdfFragment::exitCurrentlyActiveMode));
