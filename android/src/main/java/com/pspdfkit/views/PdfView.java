@@ -750,6 +750,14 @@ public class PdfView extends FrameLayout {
     }
 
     public void exitCurrentlyActiveMode() {
+
+        getCurrentPdfUiFragment()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(pdfUiFragment -> {
+                    PdfSearchView searchView = pdfUiFragment.getPSPDFKitViews().getSearchView();
+                    searchView.hide();
+                });
+
         pendingFragmentActions.add(getCurrentPdfFragment()
             .observeOn(Schedulers.io())
             .subscribe(PdfFragment::exitCurrentlyActiveMode));
