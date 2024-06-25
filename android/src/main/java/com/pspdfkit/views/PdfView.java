@@ -754,8 +754,10 @@ public class PdfView extends FrameLayout {
     public void exitCurrentlyActiveMode() {
 
         IBinder windowToken = getWindowToken();
-        InputMethodManager inputMethodManager = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(windowToken, 0);
+        if (windowToken != null) {
+            InputMethodManager inputMethodManager = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(windowToken, 0);
+        }
 
         pendingFragmentActions.add(getCurrentPdfFragment()
             .observeOn(Schedulers.io())
