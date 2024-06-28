@@ -595,7 +595,7 @@ public class PdfView extends FrameLayout {
                                         .beginTransaction()
                                         .add(R.id.pspdf__fragment_container
                                                 , pdfUiFragment)
-                                        .commitNow();
+                                        .commitNowAllowingStateLoss();
                                 postFragmentSetup(pdfUiFragment);
                             } catch (Exception e) {
                                 // Could not add fragment
@@ -615,7 +615,7 @@ public class PdfView extends FrameLayout {
                                 fragmentManager
                                         .beginTransaction()
                                         .remove(pdfUiFragment)
-                                        .commitNow();
+                                        .commitNowAllowingStateLoss();
                             } catch (Exception e) {
                                 // Could not remove fragment
                             }
