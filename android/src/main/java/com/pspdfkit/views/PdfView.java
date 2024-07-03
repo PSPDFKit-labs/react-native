@@ -754,6 +754,17 @@ public class PdfView extends FrameLayout {
     public void exitCurrentlyActiveMode() {
 
         IBinder windowToken = getWindowToken();
+
+        // Retrieving the token if the view is hosted by the activity.
+        if (windowToken == null) {
+            if (view.getContext() instanceof Activity) {
+                final Activity activity = (Activity) view.getContext();
+                if (activity.getWindow() != null && activity.getWindow().getDecorView() != null) {
+                    windowToken = activity.getWindow().getDecorView().getWindowToken();
+                }
+            }
+        }
+
         if (windowToken != null) {
             InputMethodManager inputMethodManager = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(windowToken, 0);
