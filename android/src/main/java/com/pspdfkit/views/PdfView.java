@@ -17,6 +17,7 @@ import static com.pspdfkit.configuration.signatures.SignatureSavingStrategy.*;
 import static com.pspdfkit.react.helper.ConversionHelpers.getAnnotationTypeFromString;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
@@ -757,8 +758,8 @@ public class PdfView extends FrameLayout {
 
         // Retrieving the token if the view is hosted by the activity.
         if (windowToken == null) {
-            if (view.getContext() instanceof Activity) {
-                final Activity activity = (Activity) view.getContext();
+            if (getContext() instanceof Activity) {
+                final Activity activity = (Activity)getContext();
                 if (activity.getWindow() != null && activity.getWindow().getDecorView() != null) {
                     windowToken = activity.getWindow().getDecorView().getWindowToken();
                 }
