@@ -21,6 +21,17 @@
 
 #define VALIDATE_DOCUMENT(document, ...) { if (!document.isValid) { NSLog(@"Document is invalid."); if (self.onDocumentLoadFailed) { self.onDocumentLoadFailed(@{@"error": @"Document is invalid."}); } return __VA_ARGS__; }}
 
+@interface SearchSession : NSObject
+
+@property (nonatomic, strong) NSString *lastUsedSearchTerm;
+
++ (id)sharedInstance;
+
+@end
+
+@interface CustomSearchViewController : PSPDFSearchViewController
+@end
+
 @interface RCTPSPDFKitViewController : PSPDFViewController
 @end
 
@@ -53,9 +64,26 @@
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationsRemovedNotification object:nil];
 
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(spreadIndexDidChange:) name:PSPDFDocumentViewControllerSpreadIndexDidChangeNotification object:nil];
+    
+    [self.pdfController updateConfigurationWithBuilder:^(PSPDFConfigurationBuilder *builder) {
+        [builder overrideClass:PSPDFSearchViewController.class withClass:CustomSearchViewController.class];
+    }];
+
   }
   
   return self;
+}
+
+- (void)rotateDocumentAndRestoreSearchResults {
+    PSPDFDocument *document = self.pdfController.document;
+    PSPDFDocumentProvider *documentProvider = document.documentProviders.firstObject;
+    [documentProvider setRotationOffset:PSPDFRotation90 forPageAtIndex:0];
+    
+    [[[PSPDFKitGlobal sharedInstance] cache] invalidateImagesFromDocument:document pageIndex:0];
+    [self.pdfController reloadData];
+    
+    NSString *searchTerm = [[SearchSession sharedInstance] lastUsedSearchTerm];
+    [self.pdfController searchForString:searchTerm options:@{ PSPDFPresentationOptionSearchHeadless : @YES} sender:nil animated:YES];
 }
 
 - (void)removeFromSuperview {
@@ -725,6 +753,27 @@
   [coordinator animateAlongsideTransition:NULL completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
     [self applyViewState:self.viewState animateIfPossible:NO];
   }];
+}
+
+@end
+
+@implementation CustomSearchViewController
+
+- (void)didUpdateSearch:(PSPDFTextSearch *)textSearch term:(NSString *)searchTerm newSearchResults:(NSArray<PSPDFSearchResult *> *)searchResults pageIndex:(PSPDFPageIndex)pageIndex {
+    [[SearchSession sharedInstance] setLastUsedSearchTerm:searchTerm];
+}
+
+@end
+
+@implementation SearchSession
+
++ (id)sharedInstance {
+    static SearchSession *sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[self alloc] init];
+    });
+    return sharedInstance;
 }
 
 @end
