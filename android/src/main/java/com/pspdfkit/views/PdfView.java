@@ -746,7 +746,7 @@ public class PdfView extends FrameLayout {
     public void enterAnnotationCreationMode() {
         pendingFragmentActions.add(getCurrentPdfFragment()
             .observeOn(Schedulers.io())
-            .subscribe(PdfFragment::enterAnnotationCreationMode));
+            .subscribe(fragment -> fragment.enterAnnotationCreationMode(AnnotationTool.INK)));
     }
 
     public void exitCurrentlyActiveMode() {

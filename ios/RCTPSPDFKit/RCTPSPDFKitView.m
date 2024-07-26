@@ -136,6 +136,7 @@
 - (BOOL)enterAnnotationCreationMode {
   [self.pdfController setViewMode:PSPDFViewModeDocument animated:YES];
   [self.pdfController.annotationToolbarController updateHostView:self container:nil viewController:self.pdfController];
+  [self.pdfController.annotationStateManager setState:PSPDFAnnotationStringInk];
   return [self.pdfController.annotationToolbarController showToolbarAnimated:YES completion:NULL];
 }
 
