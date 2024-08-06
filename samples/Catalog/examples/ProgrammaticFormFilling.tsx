@@ -43,25 +43,49 @@ export class ProgrammaticFormFilling extends BaseExampleAutoHidingHeaderComponen
             disableAutomaticSaving: true,
             signatureSavingStrategy: 'saveIfSelected',
           }}
-          onAnnotationsChanged={(event: { error: any }) => {
-            if (event.error) {
-              Alert.alert('PSPDFKit', event.error);
+          onAnnotationTapped={async (annotation: {
+            formFieldName: any; error: any }) => {
+            if (annotation.error) {
+              Alert.alert('PSPDFKit', annotation.error);
             } else {
-              if (this.state.alertVisible === false) {
-                Alert.alert(
-                  'PSPDFKit',
-                  'Annotations changed: ' + JSON.stringify(event),
-                  [
-                    {
-                      text: 'OK',
-                      onPress: () => {
-                        this.setState({ alertVisible: false });
-                      },
-                    },
-                  ],
-                );
-                this.setState({ alertVisible: true });
+              const formFieldName = annotation.formFieldName;
+
+              var allAnnotations: { name: string; }[] = [];
+              var validChoiceElementFound = true;
+              var choiceIndex = 0;
+
+              while (validChoiceElementFound) {
+                const test = await this.pdfRef.current?.getFormFieldValue(`${formFieldName}.${choiceIndex}`);
+                // @ts-ignore
+                if (test.error) {
+                  validChoiceElementFound = false;
+                  break;
+                } else {
+                  // @ts-ignore
+                  allAnnotations.push({name: `${formFieldName}.${choiceIndex}`, value: test.value});
+                }
+                choiceIndex++;
               }
+              console.log(allAnnotations);
+              Alert.alert(
+                'PSPDFKit',
+                'Annotation was successfully added.',
+                [
+                  {
+                    text: 'Set option 1',
+                    onPress: async () => {
+                      await this.pdfRef.current?.setFormFieldValue(allAnnotations[0]!.name, 'selected');
+                    },
+                  },
+                  {
+                    text: 'Set option 2',
+                    onPress: async () => {
+                      await this.pdfRef.current?.setFormFieldValue(allAnnotations[1]!.name, 'selected');
+                    },
+                  },
+                  
+                ]
+              );
             }
           }}
           style={styles.pdfColor}
