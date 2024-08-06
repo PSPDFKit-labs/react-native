@@ -69,7 +69,7 @@ export class ProgrammaticFormFilling extends BaseExampleAutoHidingHeaderComponen
               console.log(allAnnotations);
               Alert.alert(
                 'PSPDFKit',
-                'Annotation was successfully added.',
+                'Choose an option',
                 [
                   {
                     text: 'Set option 1',
