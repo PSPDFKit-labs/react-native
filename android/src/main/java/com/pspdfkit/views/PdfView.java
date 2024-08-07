@@ -613,23 +613,7 @@ public class PdfView extends FrameLayout {
                 }
 
                 @Override
-                public void onViewDetachedFromWindow(@NonNull View view) {
-                    Handler mainHandler = new Handler(getContext().getMainLooper());
-                    Runnable myRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                fragmentManager
-                                        .beginTransaction()
-                                        .remove(pdfUiFragment)
-                                        .commitNowAllowingStateLoss();
-                            } catch (Exception e) {
-                                // Could not remove fragment
-                            }
-                        }
-                    };
-                    mainHandler.post(myRunnable);
-                }
+                public void onViewDetachedFromWindow(@NonNull View view) {}
             });
             removeAllViews();
             addView(fragmentContainerView);
