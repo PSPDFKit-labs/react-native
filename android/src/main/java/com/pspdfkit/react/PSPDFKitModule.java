@@ -16,10 +16,13 @@ package com.pspdfkit.react;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Base64;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -51,6 +54,7 @@ import com.pspdfkit.react.helper.PSPDFKitUtils;
 import com.pspdfkit.ui.PdfActivity;
 import com.pspdfkit.ui.PdfFragment;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -193,7 +197,45 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
             mainHandler.post(myRunnable);
         }
     }
-    
+
+    @ReactMethod
+    public void generatePDFThumbnail(@NonNull String documentPath, @Nullable Promise promise) {
+        if (getCurrentActivity() != null) {
+            try {
+                if (Uri.parse(documentPath).getScheme() == null) {
+                    documentPath = FILE_SCHEME + documentPath;
+                }
+
+                final Uri uri = Uri.parse(documentPath);
+                // Instantiate a `Document` from the PDF file's URL.
+                final PdfDocument document = PdfDocumentLoader.openDocument(getReactApplicationContext(), uri);
+
+                final int pageIndex = 0;
+                final RectF pageImageSize = document.getPageSize(pageIndex).toRect();
+
+                // Set the thumbnail size to be five times smaller than the actual page size.
+                final RectF thumbnailImageSize = new RectF(0f, 0f, pageImageSize.width() / 5, pageImageSize.height() / 5);
+
+                // Create the image.
+                final Bitmap bitmap = document.renderPageToBitmap(
+                        getReactApplicationContext(),
+                        pageIndex,
+                        (int) thumbnailImageSize.width(),
+                        (int) thumbnailImageSize.height()
+                );
+
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                byte[] byteArray = byteArrayOutputStream .toByteArray();
+                String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+                promise.resolve(encoded);
+
+            } catch(final Exception exception) {
+                promise.reject("Could not create thumbnail");
+            }
+        }
+    }
+
     @ReactMethod
     public synchronized void setPageIndex(final int pageIndex, final boolean animated) {
         if (resumedActivity instanceof PdfActivity) {

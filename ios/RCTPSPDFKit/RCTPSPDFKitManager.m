@@ -175,6 +175,16 @@ RCT_EXPORT_METHOD(setDelayForSyncingLocalChanges: (NSNumber*)delay resolver:(RCT
     reject(@"error", @"Delay can only be set for Instant documents", nil);
 }
 
+RCT_EXPORT_METHOD(generatePDFThumbnail:(PSPDFDocument *)document resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+
+    PSPDFPageInfo *pageInfo = [document pageInfoForPageAtIndex:0];
+    CGSize thumbnailSize = CGSizeMake(pageInfo.mediaBox.size.width, pageInfo.mediaBox.size.height);
+    
+    UIImage *image = [document imageForPageAtIndex:0 size:thumbnailSize clippedToRect:CGRectZero annotations:nil options:nil error:nil];
+    NSString *base64String = [UIImagePNGRepresentation(image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+    resolve(base64String);
+}
+
 - (NSArray<NSString*> *)supportedEvents {
     return @[@"didFinishDownloadFor", @"didFailDownloadWithError", @"didFailAuthenticationFor", @"didFinishReauthenticationWithJWT", @"didFailReauthenticationWithError"];
 }

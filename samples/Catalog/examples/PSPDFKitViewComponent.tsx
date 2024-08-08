@@ -1,10 +1,11 @@
 import React from 'react';
-import { Alert, Button, processColor, View } from 'react-native';
+import { Alert, Button, Image, processColor, View } from 'react-native';
 import PSPDFKitView from 'react-native-pspdfkit';
 
 import { exampleDocumentPath, pspdfkitColor } from '../configuration/Constants';
 import { BaseExampleAutoHidingHeaderComponent } from '../helpers/BaseExampleAutoHidingHeaderComponent';
 import { hideToolbar } from '../helpers/NavigationHelper';
+import { PSPDFKit } from '../helpers/PSPDFKit';
 
 export class PSPDFKitViewComponent extends BaseExampleAutoHidingHeaderComponent {
   pdfRef: React.RefObject<PSPDFKitView>;
@@ -14,43 +15,27 @@ export class PSPDFKitViewComponent extends BaseExampleAutoHidingHeaderComponent 
     const { navigation } = this.props;
     this.pdfRef = React.createRef();
     hideToolbar(navigation);
+    this.state = {
+      base64Data: '',
+    };
+  }
+
+  override componentDidMount() {
+    PSPDFKit.generatePDFThumbnail(exampleDocumentPath)
+    // @ts-ignore
+      .then((data) => {
+        this.setState({ base64Data: data });
+      })
+      .catch((error: Error) => {
+        console.log(error.message);
+      });
   }
 
   override render() {
-    const { navigation } = this.props;
-
     return (
       <View style={styles.flex}>
-        <PSPDFKitView
-          ref={this.pdfRef}
-          document={exampleDocumentPath}
-          configuration={{
-            iOSAllowToolbarTitleChange: false,
-            toolbarTitle: 'My Awesome Report',
-            iOSBackgroundColor: processColor('lightgrey'),
-            iOSUseParentNavigationBar: false,
-          }}
-          fragmentTag="PDF1"
-          showNavigationButtonInToolbar={true}
-          onNavigationButtonClicked={() => navigation.goBack()}
-          style={styles.pdfColor}
-        />
-        <View style={styles.wrapper}>
-          <View style={styles.flex}>
-            <Button
-              accessibilityLabel={'Get Document Info'}
-              testID={'Get Document Info'}
-              onPress={ async () => {
-                const document = this.pdfRef.current?.getDocument();
-                Alert.alert(
-                  'PSPDFKit',
-                  'Document ID: ' + await document?.getDocumentId(),
-                );
-              }}
-              title="Get Document Info"
-            />
-          </View>
-        </View>
+        <Image source={{uri: `data:image/png;base64,${this.state.base64Data}`}} 
+               style={{ width:200, height:200, resizeMode: 'contain' }} />
       </View>
     );
   }
