@@ -103,7 +103,7 @@ RCT_REMAP_METHOD(processAnnotations, processAnnotations:(PSPDFAnnotationChange)a
   PSPDFProcessorConfiguration *configuration = [[PSPDFProcessorConfiguration alloc] initWithDocument:sourceDocument];
 
   // Modify annotations.
-  [configuration modifyAnnotationsOfTypes:annotationType change:annotationChange];
+  [configuration modifyAnnotationsOfTypes:PSPDFAnnotationTypeInk change:annotationChange]; // Or PSPDFAnnotationTypeAll to use all annotation types
 
   // Create the PDF processor and write the processed file.
   PSPDFProcessor *processor = [[PSPDFProcessor alloc] initWithConfiguration:configuration securityOptions:nil];
