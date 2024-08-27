@@ -487,6 +487,7 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
                         root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, e));
                     }
                 }
+                break;
             case COMMAND_ADD_FORM_FIELD:
                 if (args != null) {
                     final int requestId = args.getInt(0);

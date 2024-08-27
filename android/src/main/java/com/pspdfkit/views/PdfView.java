@@ -68,6 +68,7 @@ import com.pspdfkit.forms.ComboBoxFormElement;
 import com.pspdfkit.forms.EditableButtonFormElement;
 import com.pspdfkit.forms.FormField;
 import com.pspdfkit.forms.SignatureFormConfiguration;
+import com.pspdfkit.forms.TextFormConfiguration;
 import com.pspdfkit.forms.TextFormElement;
 import com.pspdfkit.internal.model.ImageDocumentImpl;
 import com.pspdfkit.listeners.OnVisibilityChangedListener;

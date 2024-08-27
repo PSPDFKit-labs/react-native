@@ -338,7 +338,7 @@ class PSPDFKitView extends React.Component {
         });
   
         UIManager.dispatchViewManagerCommand(
-          findNodeHandle(this.refs.pdfView),
+          findNodeHandle(this._componentRef.current),
           this._getViewManagerConfig('RCTPSPDFKitView').Commands.addFormField,
           [requestId, data],
         );
@@ -347,7 +347,7 @@ class PSPDFKitView extends React.Component {
       } else if (Platform.OS === 'ios') {
         return NativeModules.PSPDFKitViewManager.addFormField(
           data,
-          findNodeHandle(this.refs.pdfView),
+          findNodeHandle(this._componentRef.current),
         );
       }
     };
@@ -370,7 +370,7 @@ class PSPDFKitView extends React.Component {
         });
   
         UIManager.dispatchViewManagerCommand(
-          findNodeHandle(this.refs.pdfView),
+          findNodeHandle(this._componentRef.current),
           this._getViewManagerConfig('RCTPSPDFKitView').Commands.addElectronicSignatureField,
           [requestId, data],
         );
@@ -379,7 +379,7 @@ class PSPDFKitView extends React.Component {
       } else if (Platform.OS === 'ios') {
         return NativeModules.PSPDFKitViewManager.addElectronicSignatureField(
           data,
-          findNodeHandle(this.refs.pdfView),
+          findNodeHandle(this._componentRef.current),
         );
       }
     };
