@@ -76,6 +76,10 @@ export class PSPDFKit {
      */
     present: (documentPath: string, configuration: PDFConfiguration) => Promise<boolean>;
     /**
+     * Create a thumbnail from a PDF document (using the first page as preview).
+     */
+    generatePDFThumbnail: (documentPath: any) => void;
+    /**
      * Used to dismiss the ```PSPDFKitView```.
      * @method dismiss
      * @memberof PSPDFKit

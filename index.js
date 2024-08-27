@@ -1671,6 +1671,11 @@ export class PSPDFKit {
    */
   present = function (documentPath, configuration) {};
 
+ /**
+  * Create a thumbnail from a PDF document (using the first page as preview).
+  */
+  generatePDFThumbnail = function (documentPath) {};
+
   /**
    * Used to dismiss the ```PSPDFKitView```.
    * @method dismiss

@@ -229,7 +229,7 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
     @ReactMethod fun addAnnotations(reference: Int, instantJSON: ReadableMap, promise: Promise) {
         try {
             this.getDocument(reference)?.let {
-                val json = JSONObject(instantJSON.toHashMap())
+                val json = JSONObject(instantJSON.toHashMap() as Map<*, *>?)
                 val dataProvider: DataProvider = DocumentJsonDataProvider(json)
                 DocumentJsonFormatter.importDocumentJsonAsync(it, dataProvider)
                         .subscribeOn(Schedulers.io())
