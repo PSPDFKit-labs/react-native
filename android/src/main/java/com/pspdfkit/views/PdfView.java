@@ -601,20 +601,23 @@ public class PdfView extends FrameLayout {
                         public void run() {
                             try {
                                 PdfUiFragment currentPdfUiFragment = (PdfUiFragment) fragmentManager.findFragmentByTag(fragmentTag);
-                                if (currentPdfUiFragment != null) {
-                                    // There is already a fragment inside the FragmentContainer, replace it with the latest one.
-                                    fragmentManager
-                                            .beginTransaction()
-                                            .remove(currentPdfUiFragment)
-                                            .add(R.id.pspdf__fragment_container
-                                                    , pdfUiFragment, fragmentTag)
-                                            .commitNowAllowingStateLoss();
-                                } else {
-                                    fragmentManager
-                                            .beginTransaction()
-                                            .add(R.id.pspdf__fragment_container
-                                                    , pdfUiFragment, fragmentTag)
-                                            .commitNowAllowingStateLoss();
+
+                                if (currentPdfUiFragment != pdfUiFragment) {
+                                    if (currentPdfUiFragment != null) {
+                                        // There is already a fragment inside the FragmentContainer, replace it with the latest one.
+                                        fragmentManager
+                                                .beginTransaction()
+                                                .remove(currentPdfUiFragment)
+                                                .add(R.id.pspdf__fragment_container
+                                                        , pdfUiFragment, fragmentTag)
+                                                .commitNowAllowingStateLoss();
+                                    } else {
+                                        fragmentManager
+                                                .beginTransaction()
+                                                .add(R.id.pspdf__fragment_container
+                                                        , pdfUiFragment, fragmentTag)
+                                                .commitNowAllowingStateLoss();
+                                    }
                                 }
                                 postFragmentSetup(pdfUiFragment);
                             } catch (Exception e) {
