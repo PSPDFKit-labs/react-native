@@ -591,7 +591,7 @@ public class PdfView extends FrameLayout {
 
     private void prepareFragment(final PdfUiFragment pdfUiFragment, final boolean attachFragment) {
         if (attachFragment) {
-            fragmentContainerView.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+            OnAttachStateChangeListener stateChangeListener = new OnAttachStateChangeListener() {
                 @Override
                 public void onViewAttachedToWindow(@NonNull View view) {
 
@@ -601,6 +601,7 @@ public class PdfView extends FrameLayout {
                         public void run() {
                             try {
                                 PdfUiFragment currentPdfUiFragment = (PdfUiFragment) fragmentManager.findFragmentByTag(fragmentTag);
+
                                 if (currentPdfUiFragment != null) {
                                     // There is already a fragment inside the FragmentContainer, replace it with the latest one.
                                     fragmentManager
@@ -623,11 +624,14 @@ public class PdfView extends FrameLayout {
                         }
                     };
                     mainHandler.post(myRunnable);
+                    fragmentContainerView.removeOnAttachStateChangeListener(this);
                 }
 
                 @Override
                 public void onViewDetachedFromWindow(@NonNull View view) {}
-            });
+            };
+
+            fragmentContainerView.addOnAttachStateChangeListener(stateChangeListener);
             removeAllViews();
             addView(fragmentContainerView);
         } else {
