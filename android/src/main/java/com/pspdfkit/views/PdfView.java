@@ -298,11 +298,11 @@ public class PdfView extends FrameLayout {
         return configuration;
     }
 
-    public void setCustomToolbarItems(final ArrayList toolbarItems) {
+    public void setAllToolbarItems(final ArrayList stockToolbarItems, final ArrayList customToolbarItems) {
         pendingFragmentActions.add(getCurrentPdfUiFragment()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(pdfUiFragment -> {
-                        ((ReactPdfUiFragment) pdfUiFragment).setCustomToolbarItems(toolbarItems, menuItemListener);
+                    ((ReactPdfUiFragment) pdfUiFragment).setCustomToolbarItems(stockToolbarItems, customToolbarItems, menuItemListener);
 
         }));
     }

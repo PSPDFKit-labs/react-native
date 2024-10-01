@@ -211,9 +211,7 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
                 view.setConfiguration(newConfigurations.build());
             }
         }
-        if (customToolbarItems != null) {
-            view.setCustomToolbarItems(customToolbarItems);
-        }
+        view.setAllToolbarItems(stockToolbarItems.toArrayList(), customToolbarItems);
     }
 
     @ReactProp(name = "disableDefaultActionForTappedAnnotations")
