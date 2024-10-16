@@ -80,6 +80,7 @@ import com.pspdfkit.react.events.PdfViewDocumentLoadFailedEvent;
 import com.pspdfkit.react.events.PdfViewDocumentLoadedEvent;
 import com.pspdfkit.react.events.PdfViewDocumentSaveFailedEvent;
 import com.pspdfkit.react.events.PdfViewDocumentSavedEvent;
+import com.pspdfkit.react.events.PdfViewDocumentScrolledEvent;
 import com.pspdfkit.react.events.PdfViewNavigationButtonClickedEvent;
 import com.pspdfkit.react.events.CustomToolbarButtonTappedEvent;
 import com.pspdfkit.react.events.PdfViewStateChangedEvent;
@@ -688,6 +689,7 @@ public class PdfView extends FrameLayout {
             }
         });
 
+        pdfFragment.addDocumentScrollListener(pdfViewDocumentListener);
         pdfFragment.addOnTextSelectionModeChangeListener(pdfViewModeController);
         pdfFragment.addDocumentListener(pdfViewDocumentListener);
         pdfFragment.addOnAnnotationSelectedListener(pdfViewDocumentListener);
@@ -1256,6 +1258,7 @@ public class PdfView extends FrameLayout {
        map.put(PdfViewDocumentLoadedEvent.EVENT_NAME, MapBuilder.of("registrationName", "onDocumentLoaded"));
        map.put(CustomToolbarButtonTappedEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCustomToolbarButtonTapped"));
        map.put(CustomAnnotationContextualMenuItemTappedEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCustomAnnotationContextualMenuItemTapped"));
+       map.put(PdfViewDocumentScrolledEvent.EVENT_NAME, MapBuilder.of("registrationName", "onDocumentScrolled"));
        return map;
     }
 

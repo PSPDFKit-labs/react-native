@@ -474,6 +474,10 @@ export type Props = {
      */
     onAnnotationsChanged?: Function;
     /**
+     * Callback that’s called when the document is scrolled.
+     */
+    onDocumentScrolled?: Function;
+    /**
      * Callback that’s called when the state of the ```PSPDFKitView``` changes.
      */
     onStateChanged?: Function;
@@ -812,6 +816,10 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
     /**
      * @ignore
      */
+    _onDocumentScrolled: (event: any) => void;
+    /**
+     * @ignore
+     */
     _onNavigationButtonClicked: (event: any) => void;
     /**
      * @ignore
@@ -862,7 +870,7 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * @memberof PSPDFKitView
      * @returns { PDFDocument } A reference to the document that is currently loaded in the PSPDFKitView component.
      */
-    getDocument: () => PDFDocument;
+    getDocument(): PDFDocument;
     /**
      * @method clearSelectedAnnotations
      * @memberof PDFDocument
@@ -1275,6 +1283,7 @@ declare namespace PSPDFKitView {
         let onStateChanged: Function;
         let onCustomToolbarButtonTapped: Function;
         let onCustomAnnotationContextualMenuItemTapped: Function;
+        let onDocumentScrolled: Function;
         let fragmentTag: string;
         let menuItemGrouping: any[];
         let leftBarButtonItems: Array<string>;

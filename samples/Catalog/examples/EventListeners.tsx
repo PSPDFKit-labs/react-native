@@ -54,6 +54,13 @@ export class EventListeners extends BaseExampleAutoHidingHeaderComponent {
               );
             }
           }}
+          onDocumentScrolled={(event: any) => {
+            if (event.error) {
+              Alert.alert('PSPDFKit', event.error);
+            } else {
+              console.log('Scrolled document: ' + JSON.stringify(event));
+            }
+          }}
           onDocumentSaved={(event: { error: any }) => {
             if (event.error) {
               Alert.alert('PSPDFKit', event.error);

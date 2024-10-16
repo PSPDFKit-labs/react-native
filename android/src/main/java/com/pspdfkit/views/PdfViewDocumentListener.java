@@ -28,17 +28,21 @@ import com.pspdfkit.forms.FormElement;
 import com.pspdfkit.forms.FormField;
 import com.pspdfkit.forms.FormListeners;
 import com.pspdfkit.listeners.DocumentListener;
+import com.pspdfkit.listeners.scrolling.DocumentScrollListener;
+import com.pspdfkit.listeners.scrolling.ScrollState;
 import com.pspdfkit.react.events.PdfViewAnnotationChangedEvent;
 import com.pspdfkit.react.events.PdfViewAnnotationTappedEvent;
 import com.pspdfkit.react.events.PdfViewDocumentLoadedEvent;
 import com.pspdfkit.react.events.PdfViewDocumentSaveFailedEvent;
 import com.pspdfkit.react.events.PdfViewDocumentSavedEvent;
+import com.pspdfkit.react.events.PdfViewDocumentScrolledEvent;
 import com.pspdfkit.ui.special_mode.controller.AnnotationSelectionController;
 import com.pspdfkit.ui.special_mode.manager.AnnotationManager;
 
 import java.util.List;
+import java.util.Map;
 
-class PdfViewDocumentListener implements DocumentListener, AnnotationManager.OnAnnotationSelectedListener, AnnotationProvider.OnAnnotationUpdatedListener, FormListeners.OnFormFieldUpdatedListener {
+class PdfViewDocumentListener implements DocumentListener, AnnotationManager.OnAnnotationSelectedListener, AnnotationProvider.OnAnnotationUpdatedListener, FormListeners.OnFormFieldUpdatedListener, DocumentScrollListener {
 
     @NonNull
     private final PdfView parent;
@@ -160,5 +164,15 @@ class PdfViewDocumentListener implements DocumentListener, AnnotationManager.OnA
     @Override
     public void onFormFieldReset(@NonNull FormField formField, @NonNull FormElement formElement) {
         // Not used.
+    }
+
+    @Override
+    public void onScrollStateChanged(@NonNull ScrollState scrollState) {
+
+    }
+
+    @Override
+    public void onDocumentScrolled(int currX, int currY, int maxX, int maxY, int extendX, int extendY) {
+        eventDispatcher.dispatchEvent(new PdfViewDocumentScrolledEvent(parent.getId(), Map.of("currX", currX, "currY", currY, "maxX", maxX, "maxY", maxY, "extendX", extendX, "extendY", extendY)));
     }
 }
