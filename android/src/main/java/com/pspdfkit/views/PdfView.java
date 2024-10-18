@@ -292,6 +292,7 @@ public class PdfView extends FrameLayout {
                     .attach(fragment)
                     .commitNowAllowingStateLoss();
         }
+        setShowNavigationButtonInToolbar(this.isNavigationButtonShown);
     }
 
     public PdfActivityConfiguration getConfiguration() {
