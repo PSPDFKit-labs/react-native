@@ -282,7 +282,7 @@ public class PdfView extends FrameLayout {
 
     public void setConfiguration(PdfActivityConfiguration configuration) {
         this.configuration = configuration;
-        if (fragment != null && fragment.getPdfFragment() != null) {
+        if (fragment != null) {
             fragment.setConfiguration(configuration);
             // If the same stock toolbar buttons are supplied (with new custom button(s))
             // the SDK will not reload the toolbar as it thinks no changes occurred.
