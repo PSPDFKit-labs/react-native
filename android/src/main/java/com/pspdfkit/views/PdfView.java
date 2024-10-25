@@ -309,7 +309,6 @@ public class PdfView extends FrameLayout {
 
     public void setAnnotationConfiguration(final List<ReactAnnotationPresetConfiguration> annotationsConfigurations) {
         this.annotationsConfigurations = annotationsConfigurations;
-        setupFragment(false);
     }
 
     public void setDocumentPassword(@Nullable String documentPassword) {
