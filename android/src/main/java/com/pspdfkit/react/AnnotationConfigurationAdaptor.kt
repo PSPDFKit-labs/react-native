@@ -1116,6 +1116,8 @@ class AnnotationConfigurationAdaptor {
             val builder = InkAnnotationConfiguration.builder(context)
             val iterator = configuration.keySetIterator()
 
+            builder.setSupportedProperties(EnumSet.of(AnnotationProperty.ANNOTATION_ALPHA))
+
             while (iterator.hasNextKey()) {
                 when (val key = iterator.nextKey()) {
                     DEFAULT_THICKNESS -> builder.setDefaultThickness(

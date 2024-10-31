@@ -69,6 +69,16 @@ RCT_CUSTOM_VIEW_PROPERTY(document, PSPDFDocument, RCTPSPDFKitView) {
       
     [view.pdfController updateConfigurationWithBuilder:^(PSPDFConfigurationBuilder *builder) {
         [builder overrideClass:PSPDFFontPickerViewController.class withClass:CustomFontPickerViewController.class];
+
+        // Do not show color presets.
+        PSPDFAnnotationType typesShowingColorPresets = builder.typesShowingColorPresets;
+        typesShowingColorPresets = typesShowingColorPresets &~ PSPDFAnnotationTypeInk;
+        builder.typesShowingColorPresets = typesShowingColorPresets;
+
+        // Configure the properties for ink annotations to only show alpha setting in the annotation inspector.
+        NSMutableDictionary<PSPDFAnnotationString, id> *propertiesForAnnotations = [builder.propertiesForAnnotations mutableCopy];
+        propertiesForAnnotations[PSPDFAnnotationStringInk] = @[@[PSPDFAnnotationStyleKeyAlpha]];
+        builder.propertiesForAnnotations = propertiesForAnnotations;
     }];
   }
 }
