@@ -11,6 +11,9 @@ export class ToolbarCustomization extends BaseExampleAutoHidingHeaderComponent {
   constructor(props: any) {
     super(props);
     this.pdfRef = React.createRef();
+    this.state = {
+      menuItemGroupingItems: ['highlight']
+    };
   }
 
   override render() {
@@ -37,23 +40,12 @@ export class ToolbarCustomization extends BaseExampleAutoHidingHeaderComponent {
               viewMode: Toolbar.PDFViewMode.VIEW_MODE_DOCUMENT,
               animated: true,
               buttons: [
-                {
-                  image: 'example_toolbar_icon',
-                  id: 'myCustomButton'
-                }
+                Toolbar.DefaultToolbarButton.ANNOTATION_BUTTON_ITEM,
               ],
             },
             // Android only.
             toolbarMenuItems: {
               buttons: [
-                {
-                  image: 'example_toolbar_icon', 
-                  id: 'custom_action',
-                  title: 'Android title',
-                  showAsAction: true
-                },
-                Toolbar.DefaultToolbarButton.SETTINGS_BUTTON_ITEM,
-                Toolbar.DefaultToolbarButton.SEARCH_BUTTON_ITEM,
                 Toolbar.DefaultToolbarButton.ANNOTATION_BUTTON_ITEM,
               ],
             },
@@ -61,70 +53,20 @@ export class ToolbarCustomization extends BaseExampleAutoHidingHeaderComponent {
           onCustomToolbarButtonTapped={(event: any) => {
             Alert.alert('PSPDFKit', `Custom button tapped: ${JSON.stringify(event)}`);
           }}
-          menuItemGrouping={[
-            {
-              key: 'markup',
-              items: ['squiggly', 'strikeout', 'underline'],
-            },
-            {
-              key: 'writing',
-              items: ['freetext', 'note'],
-            },
-            {
-              key: 'drawing',
-              items: [
-                'line',
-                'square',
-                'circle',
-                'polygon',
-                'polyline',
-                'arrow',
-              ],
-            },
-            {
-              key: 'measurement',
-              items: ['area_square', 'perimeter', 'distance', 'area_circle'],
-            },
-          ]}
+          menuItemGrouping={this.state.menuItemGroupingItems}
           style={styles.pdfColor}
         />
         <View style={styles.wrapperView}>
           <View style={styles.marginLeft}>
             <Button
               onPress={async () => {
-                const toolbar: Toolbar = {
-                  leftBarButtonItems: {
-                    viewMode: Toolbar.PDFViewMode.VIEW_MODE_DOCUMENT,
-                    animated: true,
-                    buttons: [
-                      Toolbar.DefaultToolbarButton.SETTINGS_BUTTON_ITEM,
-                      {
-                        image: 'example_toolbar_icon',
-                        id: 'myCustomButton1'
-                      }
-                    ],
-                  },
-                  rightBarButtonItems: {
-                    viewMode: Toolbar.PDFViewMode.VIEW_MODE_DOCUMENT,
-                    animated: true,
-                    buttons: [
-                      Toolbar.DefaultToolbarButton.SEARCH_BUTTON_ITEM
-                      
-                    ],
-                  },
-                  toolbarMenuItems: {
-                    buttons: [
-                      Toolbar.DefaultToolbarButton.THUMBNAILS_BUTTON_ITEM,
-                      {
-                        image: 'example_toolbar_icon', 
-                        id: 'custom_action',
-                        title: 'Android title',
-                        showAsAction: true
-                      },
-                    ],
-                  },
-              };
-              this.pdfRef.current?.setToolbar(toolbar);
+                this.setState({
+                  menuItemGroupingItems: ['signature']
+                })
+                if (Platform.OS === 'android') {
+                  this.pdfRef.current?.exitCurrentlyActiveMode();
+                  this.pdfRef.current?.enterAnnotationCreationMode();
+                }
               }}
               title="Set Toolbar Items"
               accessibilityLabel="Set Toolbar Items"
