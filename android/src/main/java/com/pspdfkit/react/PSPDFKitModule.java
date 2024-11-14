@@ -325,10 +325,23 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
     @Override
     public synchronized void onActivityResumed(Activity activity) {
         resumedActivity = activity;
-        if (resumedActivity instanceof PdfActivity && onPdfActivityOpenedTask != null) {
-            // Run our queued up task when a PdfActivity is displayed.
-            onPdfActivityOpenedTask.run();
-            onPdfActivityOpenedTask = null;
+        if (resumedActivity instanceof PdfActivity pdfActivity) {
+            if (onPdfActivityOpenedTask != null) {
+                // Run our queued up task when a PdfActivity is displayed.
+                onPdfActivityOpenedTask.run();
+                onPdfActivityOpenedTask = null;
+            }
+
+            try {
+                ActionBar ab = pdfActivity.getSupportActionBar();
+                ab.setDisplayHomeAsUpEnabled(true);
+                ReactMainToolbar mainToolbar = pdfActivity.findViewById(R.id.pspdf__toolbar_main);
+                mainToolbar.setNavigationOnClickListener(v -> {
+                    pdfActivity.onBackPressed();
+                });
+            } catch (Exception e) {
+                // Could not add back button to main toolbar
+            }
 
             // We notify the called as soon as the document is loaded or loading failed.
             if (lastPresentPromise != null) {
