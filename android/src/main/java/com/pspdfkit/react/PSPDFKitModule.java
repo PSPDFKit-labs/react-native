@@ -47,6 +47,7 @@ import com.pspdfkit.react.helper.ConversionHelpers;
 import com.pspdfkit.react.helper.PSPDFKitUtils;
 import com.pspdfkit.ui.PdfActivity;
 import com.pspdfkit.ui.PdfFragment;
+import com.pspdfkit.views.ReactMainToolbar;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -345,7 +346,6 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
 
             // We notify the called as soon as the document is loaded or loading failed.
             if (lastPresentPromise != null) {
-                PdfActivity pdfActivity = (PdfActivity) resumedActivity;
                 pdfActivity.getPdfFragment().addDocumentListener(new SimpleDocumentListener() {
                     @Override
                     public void onDocumentLoaded(@NonNull PdfDocument document) {
