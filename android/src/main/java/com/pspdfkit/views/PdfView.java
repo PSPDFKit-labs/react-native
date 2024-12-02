@@ -841,6 +841,7 @@ public class PdfView extends FrameLayout {
 
                             try {
                                 fragment.getPdfFragment().setSelectedAnnotations(annotationsToSelect);
+                                fragment.getPdfFragment().enterAnnotationEditingMode(annotationsToSelect);
                                 JSONObject result = new JSONObject();
                                 result.put("success", true);
                                 eventDispatcher.dispatchEvent(new PdfViewDataReturnedEvent(getId(), requestId, result));

@@ -188,7 +188,7 @@
         }
         
         PSPDFPageView * pageView = self.pdfController.visiblePageViews[0];
-        pageView.selectedAnnotations = annotationsToSelect;
+        [pageView selectAnnotations:annotationsToSelect presentMenu:YES animated:YES];
         return YES;
     } else {
         return NO;
