@@ -76,6 +76,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// Annotation Contextual Menu Customization
 - (void)setAnnotationContextualMenuItems:(NSDictionary *)items;
 
+- (NSDictionary *)extractTextFromPage:(NSNumber *)pageIndex;
+
 @end
 
 NS_ASSUME_NONNULL_END

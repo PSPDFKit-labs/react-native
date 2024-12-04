@@ -856,6 +856,12 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      */
     saveCurrentDocument: () => Promise<boolean>;
     /**
+     * Extracts text from the document for a given page.
+     * @method extractTextFromPage
+     * @memberof PSPDFKitView
+     */
+    extractTextFromPage: (pageIndex: any) => any;
+    /**
      * Get the current PDF document.
      * @method getDocument
      * @example

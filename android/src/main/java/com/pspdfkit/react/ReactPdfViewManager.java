@@ -79,6 +79,7 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
     public static final int COMMAND_GET_ANNOTATION_FLAGS = 26;
     public static final int COMMAND_CLEAR_SELECTED_ANNOTATIONS = 27;
     public static final int COMMAND_SELECT_ANNOTATIONS = 28;
+    public static final int COMMAND_EXTRACT_TEXT_FROM_PAGE = 29;
 
     private final CompositeDisposable annotationDisposables = new CompositeDisposable();
 
@@ -140,6 +141,7 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
         commandMap.put("getAnnotationFlags", COMMAND_GET_ANNOTATION_FLAGS);
         commandMap.put("clearSelectedAnnotations", COMMAND_CLEAR_SELECTED_ANNOTATIONS);
         commandMap.put("selectAnnotations", COMMAND_SELECT_ANNOTATIONS);
+        commandMap.put("extractTextFromPage", COMMAND_EXTRACT_TEXT_FROM_PAGE);
         return commandMap;
     }
 
@@ -298,6 +300,18 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
     @Override
     public void receiveCommand(@NonNull final PdfView root, int commandId, @Nullable ReadableArray args) {
         switch (commandId) {
+            case COMMAND_EXTRACT_TEXT_FROM_PAGE:
+                if (args != null && args.size() == 2) {
+                    final int requestId = args.getInt(0);
+                    final int pageIndex = args.getInt(1);
+                    try {
+                        JSONObject result = root.extractTextFromPage(pageIndex);
+                        root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, result));
+                    } catch (Exception e) {
+                        root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, e));
+                    }
+                }
+                break;
             case COMMAND_ENTER_ANNOTATION_CREATION_MODE:
                 root.enterAnnotationCreationMode();
                 break;

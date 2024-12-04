@@ -793,6 +793,15 @@ public class PdfView extends FrameLayout {
         return eventDispatcher;
     }
 
+    public JSONObject extractTextFromPage(int pageIndex) throws JSONException {
+        if (fragment == null || fragment.getDocument() == null) {
+            return null;
+        }
+        JSONObject result = new JSONObject();
+        result.put("text", fragment.getDocument().getPageText(pageIndex));
+        return result;
+    }
+
     public void enterAnnotationCreationMode() {
         pendingFragmentActions.add(getCurrentPdfFragment()
             .observeOn(Schedulers.io())

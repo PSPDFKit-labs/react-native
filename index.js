@@ -269,6 +269,37 @@ class PSPDFKitView extends React.Component {
   };
 
   /**
+   * Extracts text from the document for a given page.
+   * @method extractTextFromPage
+   * @memberof PSPDFKitView
+   */
+  extractTextFromPage = function (pageIndex) {
+    if (Platform.OS === 'android') {
+      let requestId = this._nextRequestId++;
+      let requestMap = this._requestMap;
+
+      // We create a promise here that will be resolved once onDataReturned is called.
+      let promise = new Promise(function (resolve, reject) {
+        requestMap[requestId] = { resolve: resolve, reject: reject };
+      });
+
+      UIManager.dispatchViewManagerCommand(
+        findNodeHandle(this._componentRef.current),
+        this._getViewManagerConfig('RCTPSPDFKitView').Commands
+          .extractTextFromPage,
+        [requestId, pageIndex],
+      );
+
+      return promise;
+    } else if (Platform.OS === 'ios') {
+      return NativeModules.PSPDFKitViewManager.extractTextFromPage(
+        findNodeHandle(this._componentRef.current),
+        pageIndex
+      );
+    }
+  };
+
+  /**
    * Get the current PDF document.
    * @method getDocument
    * @example

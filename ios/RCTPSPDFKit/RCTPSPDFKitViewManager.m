@@ -246,6 +246,18 @@ RCT_EXPORT_METHOD(enterAnnotationCreationMode:(nonnull NSNumber *)reactTag resol
   });
 }
 
+RCT_EXPORT_METHOD(extractTextFromPage:(nonnull NSNumber *)reactTag pageIndex:(nonnull NSNumber *)pageIndex resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    RCTPSPDFKitView *component = (RCTPSPDFKitView *)[self.bridge.uiManager viewForReactTag:reactTag];
+      NSDictionary *result = [component extractTextFromPage:pageIndex];
+    if (result != nil) {
+      resolve(result);
+    } else {
+      reject(@"error", @"Failed to enter annotation creation mode.", nil);
+    }
+  });
+}
+
 RCT_EXPORT_METHOD(exitCurrentlyActiveMode:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   dispatch_async(dispatch_get_main_queue(), ^{
     RCTPSPDFKitView *component = (RCTPSPDFKitView *)[self.bridge.uiManager viewForReactTag:reactTag];

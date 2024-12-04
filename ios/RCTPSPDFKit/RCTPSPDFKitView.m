@@ -142,6 +142,17 @@
   return nil;
 }
 
+- (NSDictionary *)extractTextFromPage:(NSNumber *)pageIndex {
+    
+    PSPDFDocument *document = self.pdfController.document;
+    VALIDATE_DOCUMENT(document, NO)
+    PSPDFDocumentProvider *documentProvider = document.documentProviders.firstObject;
+    
+    PSPDFTextParser *parser = [documentProvider textParserForPageAtIndex:[pageIndex integerValue]];
+    NSDictionary *result = @{@"text" : parser.text == nil ? @"" : parser.text};
+    return result;
+}
+
 - (BOOL)enterAnnotationCreationMode {
   [self.pdfController setViewMode:PSPDFViewModeDocument animated:YES];
   [self.pdfController.annotationToolbarController updateHostView:self container:nil viewController:self.pdfController];

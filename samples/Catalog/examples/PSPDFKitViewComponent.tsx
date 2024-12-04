@@ -41,13 +41,10 @@ export class PSPDFKitViewComponent extends BaseExampleAutoHidingHeaderComponent 
               accessibilityLabel={'Get Document Info'}
               testID={'Get Document Info'}
               onPress={ async () => {
-                const document = this.pdfRef.current?.getDocument();
-                Alert.alert(
-                  'PSPDFKit',
-                  'Document ID: ' + await document?.getDocumentId(),
-                );
+                const text = await this.pdfRef.current?.extractTextFromPage(1);
+                console.log(text);
               }}
-              title="Get Document Info"
+              title="Get Text"
             />
           </View>
         </View>
