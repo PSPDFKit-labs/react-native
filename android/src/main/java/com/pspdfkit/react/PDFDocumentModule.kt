@@ -292,21 +292,17 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
                 val allFormFields = it.formProvider.formFields
 
                 XfdfFormatter.writeXfdfAsync(it, allAnnotations, allFormFields, outputStream)
-                XfdfFormatter.parseXfdfAsync(it, ContentResolverDataProvider((Uri.parse(exportPath))))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                { annotations ->
-                                    for (annotation in annotations) {
-                                        it.annotationProvider.addAnnotationToPage(annotation)
-                                    }
-                                    val result = JSONObject()
-                                    result.put("success", true)
-                                    result.put("filePath", filePath)
-                                    val jsonMap = JsonUtilities.jsonObjectToMap(result)
-                                    val nativeMap = Arguments.makeNativeMap(jsonMap)
-                                    promise.resolve(nativeMap)
-                                }, { e ->
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        {
+                            val result = JSONObject()
+                            result.put("success", true)
+                            result.put("filePath", filePath)
+                            val jsonMap = JsonUtilities.jsonObjectToMap(result)
+                            val nativeMap = Arguments.makeNativeMap(jsonMap)
+                            promise.resolve(nativeMap)
+                        }, { e ->
                             promise.reject("exportXFDF error", e)
                         })
             }
