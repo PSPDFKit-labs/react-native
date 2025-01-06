@@ -14,6 +14,7 @@
 #import <React/RCTConvert.h>
 #import "RCTConvert+PSPDFAnnotation.h"
 #import "RCTConvert+PSPDFAnnotationChange.h"
+#import "RCTConvert+PSPDFDocument.h"
 #if __has_include("PSPDFKitReactNativeiOS-Swift.h")
 #import "PSPDFKitReactNativeiOS-Swift.h"
 #else
@@ -91,6 +92,17 @@ RCT_REMAP_METHOD(setPageIndex, setPageIndex:(NSUInteger)pageIndex animated:(BOOL
   } else {
     reject(@"error", @"Failed to set page index: The page index is out of bounds", nil);
   }
+}
+
+RCT_REMAP_METHOD(getPageCountForDocument, getPageCountForDocument:(NSString *)documentPath
+                 resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+    NSURL *url = [RCTConvert parseURL:documentPath];
+    PSPDFDocument *document = [[PSPDFDocument alloc] initWithURL:url];
+    if (document != nil) {
+        resolve(@(document.pageCount));
+    } else {
+      reject(@"error", @"Failed to get document page count", nil);
+    }
 }
 
 // MARK: - Annotation Processing

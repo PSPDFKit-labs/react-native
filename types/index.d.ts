@@ -98,6 +98,16 @@ export class PSPDFKit {
      */
     setPageIndex: (pageIndex: number, animated: boolean) => Promise<boolean>;
     /**
+     * Used to get the page count of the specified document.
+     * @method getPageCountForDocument
+     * @memberof PSPDFKit
+     * @param { string } path The path to the document.
+     * @returns { Promise<boolean> } A promise returning the page count of the specified document.
+     * @example
+     * PSPDFKit.getPageCountForDocument('path/to/document.pdf');
+     */
+    getPageCountForDocument: (document: any) => Promise<boolean>;
+    /**
      * Used to create a new document with processed annotations, allowing a password to unlock the source document.
      * @method processAnnotations
      * @memberof PSPDFKit

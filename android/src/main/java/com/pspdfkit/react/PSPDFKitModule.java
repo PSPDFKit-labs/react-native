@@ -49,6 +49,7 @@ import com.pspdfkit.ui.PdfActivity;
 import com.pspdfkit.ui.PdfFragment;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -251,6 +252,26 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
             task.changeAnnotationsOfType(type, mode);
         }
         return task;
+    }
+
+    @ReactMethod
+    public void getPageCountForDocument(@Nullable String documentPath, @Nullable Promise promise) {
+        try {
+            if (Uri.parse(documentPath).getScheme() == null) {
+                // If there is no scheme it might be a raw path.
+                try {
+                    File file = new File(documentPath);
+                    documentPath = Uri.fromFile(file).toString();
+                } catch (Exception e) {
+                    documentPath = FILE_SCHEME + documentPath;
+                }
+            }
+
+            PdfDocument document = PdfDocumentLoader.openDocument(getReactApplicationContext(), Uri.parse(documentPath));
+            promise.resolve(document.getPageCount());
+        } catch (IOException e) {
+            promise.reject(e);
+        }
     }
 
     @ReactMethod

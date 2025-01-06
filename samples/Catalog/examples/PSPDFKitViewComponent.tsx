@@ -5,6 +5,7 @@ import PSPDFKitView from 'react-native-pspdfkit';
 import { exampleDocumentPath, pspdfkitColor } from '../configuration/Constants';
 import { BaseExampleAutoHidingHeaderComponent } from '../helpers/BaseExampleAutoHidingHeaderComponent';
 import { hideToolbar } from '../helpers/NavigationHelper';
+import { PSPDFKit } from '../helpers/PSPDFKit';
 
 export class PSPDFKitViewComponent extends BaseExampleAutoHidingHeaderComponent {
   pdfRef: React.RefObject<PSPDFKitView>;
@@ -41,11 +42,8 @@ export class PSPDFKitViewComponent extends BaseExampleAutoHidingHeaderComponent 
               accessibilityLabel={'Get Document Info'}
               testID={'Get Document Info'}
               onPress={ async () => {
-                const document = this.pdfRef.current?.getDocument();
-                Alert.alert(
-                  'PSPDFKit',
-                  'Document ID: ' + await document?.getDocumentId(),
-                );
+                const pageCount = await PSPDFKit.getPageCountForDocument(exampleDocumentPath);
+                console.log(pageCount);
               }}
               title="Get Document Info"
             />
