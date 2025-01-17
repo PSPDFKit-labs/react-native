@@ -20,9 +20,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
@@ -31,12 +33,10 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.pspdfkit.PSPDFKit;
-import com.pspdfkit.annotations.Annotation;
 import com.pspdfkit.annotations.AnnotationType;
-import com.pspdfkit.annotations.measurements.MeasurementPrecision;
-import com.pspdfkit.annotations.measurements.Scale;
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.document.PdfDocumentLoader;
 import com.pspdfkit.document.image.CameraImagePickerFragment;
@@ -44,18 +44,21 @@ import com.pspdfkit.document.image.GalleryImagePickerFragment;
 import com.pspdfkit.document.processor.PdfProcessor;
 import com.pspdfkit.document.processor.PdfProcessorTask;
 import com.pspdfkit.exceptions.InvalidPSPDFKitLicenseException;
-import com.pspdfkit.react.RNInstantPdfActivity;
 import com.pspdfkit.listeners.SimpleDocumentListener;
 import com.pspdfkit.react.helper.ConversionHelpers;
 import com.pspdfkit.react.helper.PSPDFKitUtils;
 import com.pspdfkit.ui.PdfActivity;
 import com.pspdfkit.ui.PdfFragment;
+import com.pspdfkit.ui.search.PdfSearchView;
+import com.pspdfkit.ui.search.PdfSearchViewInline;
+import com.pspdfkit.views.ReactMainToolbar;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class PSPDFKitModule extends ReactContextBaseJavaModule implements Application.ActivityLifecycleCallbacks, ActivityEventListener {
 
@@ -92,17 +95,22 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
     public void initialize() {
         super.initialize();
         getReactApplicationContext().addActivityEventListener(this);
-    }
-
-    @Override
-    public void onCatalystInstanceDestroy() {
-        super.onCatalystInstanceDestroy();
-        getReactApplicationContext().removeActivityEventListener(this);
+        NutrientNotificationCenter.INSTANCE.setReactContext(getReactApplicationContext());
     }
 
     @Override
     public String getName() {
         return "PSPDFKit";
+    }
+
+    @ReactMethod
+    public void addListener(String eventName) {
+        // Required to support NativeEventEmitter
+    }
+
+    @ReactMethod
+    public void removeListeners(Integer count) {
+        // Required to support NativeEventEmitter
     }
 
     @ReactMethod
@@ -178,7 +186,19 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
             ConfigurationAdapter configurationAdapter = new ConfigurationAdapter(getCurrentActivity(), configuration);
 
             lastPresentPromise = promise;
-            RNInstantPdfActivity.showInstantDocument(getCurrentActivity(), serverUrl, jwt, configurationAdapter.build());
+
+            Handler mainHandler = new Handler(getReactApplicationContext().getMainLooper());
+            Runnable myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        RNInstantPdfActivity.showInstantDocument(getCurrentActivity(), serverUrl, jwt, configurationAdapter.build());
+                    } catch (Exception e) {
+                        // Could not start instant
+                    }
+                }
+            };
+            mainHandler.post(myRunnable);
         }
     }
     
@@ -237,33 +257,78 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
         }
     }
 
+    private PdfProcessorTask setupProcessAnnotations(@NonNull final PdfDocument document,
+                                                @NonNull final String processingMode,
+                                                @Nullable final ReadableArray annotationTypes) {
+
+        PdfProcessorTask task = PdfProcessorTask.fromDocument(document);
+        final EnumSet<AnnotationType> types = ConversionHelpers.getAnnotationTypes(annotationTypes);
+        final PdfProcessorTask.AnnotationProcessingMode mode = getProcessingModeFromString(processingMode);
+        for (AnnotationType type : types) {
+            task.changeAnnotationsOfType(type, mode);
+        }
+        return task;
+    }
+
     @ReactMethod
     public void processAnnotations(@NonNull final String processingMode,
-                                   @Nullable final String annotationType,
+                                   @Nullable final ReadableArray annotationTypes,
                                    @NonNull final String sourceDocumentPath,
                                    @NonNull final String targetDocumentPath,
+                                   @Nullable final String password,
                                    @NonNull final Promise promise) {
 
-       // This is an edge case where file scheme is missing.
+        // This is an edge case where file scheme is missing.
         String documentPath = Uri.parse(sourceDocumentPath).getScheme() == null
                 ? FILE_SCHEME + sourceDocumentPath : sourceDocumentPath;
 
-        PdfDocumentLoader.openDocumentAsync(getReactApplicationContext(), Uri.parse(documentPath))
-            .flatMapCompletable(document -> {
-                PdfProcessorTask task = PdfProcessorTask.fromDocument(document);
-                final EnumSet<AnnotationType> types = ConversionHelpers.getAnnotationTypeFromString(annotationType);
-                final PdfProcessorTask.AnnotationProcessingMode mode = getProcessingModeFromString(processingMode);
-                for (AnnotationType type : types) {
-                    task.changeAnnotationsOfType(type, mode);
-                }
+        if (password != null) {
+            PdfDocumentLoader.openDocumentAsync(getReactApplicationContext(), Uri.parse(documentPath), password)
+                    .flatMapCompletable(document -> {
+                        PdfProcessorTask task = this.setupProcessAnnotations(document, processingMode, annotationTypes);
+                        return PdfProcessor.processDocumentAsync(task, new File(targetDocumentPath)).ignoreElements();
+                    })
+                    .subscribe(() -> {
+                        promise.resolve(Boolean.TRUE);
+                    }, throwable -> {
+                        promise.reject(throwable);
+                    });
+        } else {
+            PdfDocumentLoader.openDocumentAsync(getReactApplicationContext(), Uri.parse(documentPath))
+                    .flatMapCompletable(document -> {
+                        PdfProcessorTask task = this.setupProcessAnnotations(document, processingMode, annotationTypes);
+                        return PdfProcessor.processDocumentAsync(task, new File(targetDocumentPath)).ignoreElements();
+                    })
+                    .subscribe(() -> {
+                        promise.resolve(Boolean.TRUE);
+                    }, throwable -> {
+                        promise.reject(throwable);
+                    });
+        }
+    }
 
-                return PdfProcessor.processDocumentAsync(task, new File(targetDocumentPath)).ignoreElements();
-            })
-            .subscribe(() -> {
-                promise.resolve(Boolean.TRUE);
-            }, throwable -> {
-                promise.reject(throwable);
-            });
+    @ReactMethod
+    public void handleListenerAdded(String event, @Nullable Promise promise) {
+        NutrientNotificationCenter.INSTANCE.setIsNotificationCenterInUse(true);
+        if (event.equals("analytics")) {
+            NutrientNotificationCenter.INSTANCE.analyticsEnabled();
+        }
+        if (promise != null) {
+            promise.resolve(1);
+        }
+    }
+
+    @ReactMethod
+    public void handleListenerRemoved(@Nullable String event, boolean isLast, @Nullable Promise promise) {
+        if (isLast) {
+            NutrientNotificationCenter.INSTANCE.setIsNotificationCenterInUse(false);
+        }
+        if (event.equals("analytics")) {
+            NutrientNotificationCenter.INSTANCE.analyticsDisabled();
+        }
+        if (promise != null) {
+            promise.resolve(1);
+        }
     }
 
     private static PdfProcessorTask.AnnotationProcessingMode getProcessingModeFromString(@NonNull final String mode) {
@@ -301,14 +366,30 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
     @Override
     public synchronized void onActivityResumed(Activity activity) {
         resumedActivity = activity;
-        if (resumedActivity instanceof PdfActivity && onPdfActivityOpenedTask != null) {
-            // Run our queued up task when a PdfActivity is displayed.
-            onPdfActivityOpenedTask.run();
-            onPdfActivityOpenedTask = null;
+        if (resumedActivity instanceof PdfActivity pdfActivity) {
+            if (onPdfActivityOpenedTask != null) {
+                // Run our queued up task when a PdfActivity is displayed.
+                onPdfActivityOpenedTask.run();
+                onPdfActivityOpenedTask = null;
+            }
+
+            try {
+                ActionBar ab = pdfActivity.getSupportActionBar();
+                ab.setDisplayHomeAsUpEnabled(true);
+                ReactMainToolbar mainToolbar = pdfActivity.findViewById(R.id.pspdf__toolbar_main);
+                mainToolbar.setNavigationOnClickListener(v -> {
+                    pdfActivity.onBackPressed();
+                });
+                PdfSearchView searchView = pdfActivity.getPSPDFKitViews().getSearchView();
+                if (searchView instanceof PdfSearchViewInline searchViewInline) {
+                    searchViewInline.findViewById(com.pspdfkit.R.id.pspdf__search_btn_back).setVisibility(View.GONE);
+                }
+            } catch (Exception e) {
+                // Could not add back button to main toolbar
+            }
 
             // We notify the called as soon as the document is loaded or loading failed.
             if (lastPresentPromise != null) {
-                PdfActivity pdfActivity = (PdfActivity) resumedActivity;
                 pdfActivity.getPdfFragment().addDocumentListener(new SimpleDocumentListener() {
                     @Override
                     public void onDocumentLoaded(@NonNull PdfDocument document) {

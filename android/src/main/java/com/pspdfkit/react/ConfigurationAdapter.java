@@ -24,12 +24,14 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.pspdfkit.annotations.AnnotationType;
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
+import com.pspdfkit.configuration.activity.TabBarHidingMode;
 import com.pspdfkit.configuration.activity.ThumbnailBarMode;
 import com.pspdfkit.configuration.activity.UserInterfaceViewMode;
 import com.pspdfkit.configuration.page.PageFitMode;
 import com.pspdfkit.configuration.page.PageLayoutMode;
 import com.pspdfkit.configuration.page.PageScrollDirection;
 import com.pspdfkit.configuration.page.PageScrollMode;
+import com.pspdfkit.configuration.search.SearchType;
 import com.pspdfkit.configuration.sharing.ShareFeatures;
 import com.pspdfkit.configuration.signatures.SignatureSavingStrategy;
 import com.pspdfkit.preferences.PSPDFKitPreferences;
@@ -91,6 +93,8 @@ public class ConfigurationAdapter {
     private static final String SHOW_PRINT_ACTION = "showPrintAction";
     private static final String SHOW_DOCUMENT_INFO_VIEW = "showDocumentInfoView";
     private static final String SHOW_SETTINGS_MENU = "showSettingsMenu";
+    private static final String SHOW_DEFAULT_TOOLBAR = "showDefaultToolbar";
+    private static final String SHOW_ACTION_BUTTONS = "showActionButtons";
 
     // Thumbnail Options
     private static final String SHOW_THUMBNAIL_BAR = "showThumbnailBar";
@@ -322,6 +326,14 @@ public class ConfigurationAdapter {
             if (key != null) {
                 configureMeasurementToolSnappingEnabled(context, configuration.getBoolean(key));
             }
+            key = getKeyOrNull(configuration, SHOW_DEFAULT_TOOLBAR);
+            if (key != null) {
+                configureShowDefaultToolbar(configuration.getBoolean(key));
+            }
+            key = getKeyOrNull(configuration, SHOW_ACTION_BUTTONS);
+            if (key != null) {
+                configureShowActionButtons(configuration.getBoolean(key));
+            }
         }
     }
 
@@ -437,7 +449,7 @@ public class ConfigurationAdapter {
     }
 
     private void configureInlineSearch(final boolean inlineSearch) {
-        final int searchType = inlineSearch ? PdfActivityConfiguration.SEARCH_INLINE : PdfActivityConfiguration.SEARCH_MODULAR;
+        final SearchType searchType = inlineSearch ? SearchType.INLINE : SearchType.MODULAR;
         configuration.setSearchType(searchType);
     }
 
@@ -702,6 +714,26 @@ public class ConfigurationAdapter {
 
     private void configureMeasurementToolSnappingEnabled(Context context, final Boolean snappingEnabled) {
         PSPDFKitPreferences.get(context).setMeasurementSnappingEnabled(snappingEnabled);
+    }
+
+    private void configureShowDefaultToolbar(final boolean showDefaultToolbar) {
+        if (showDefaultToolbar) {
+            // Set it back to the default, which is AUTOMATIC_HIDE_SINGLE
+            configuration.setTabBarHidingMode(TabBarHidingMode.AUTOMATIC_HIDE_SINGLE);
+            configuration.enableDefaultToolbar();
+        } else {
+            configuration.setTabBarHidingMode(TabBarHidingMode.HIDE);
+            configuration.disableDefaultToolbar();
+        }
+    }
+
+    private void configureShowActionButtons(final boolean showActionButtons) {
+        if (showActionButtons) {
+            // Set it back to the default, which is AUTOMATIC_HIDE_SINGLE
+            configuration.showNavigationButtons();
+        } else {
+            configuration.hideNavigationButtons();
+        }
     }
 
     public PdfActivityConfiguration build() {

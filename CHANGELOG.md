@@ -1,4 +1,48 @@
-## Newest Release
+## Newest release
+
+### 2.15.0 - 13 Dec 2024
+
+- Adds a new `NotificationCenter` class that can be used to subscribe to Nutrient document, annotation, and analytics events. (J#HYB-448)
+- Adds the ability to show or hide the back and forward action buttons using the new `showActionButtons` property. (J#HYB-98)
+- Updates to Nutrient Android SDK 2024.8.1.
+- Fixes an issue where the `exportXFDF` API on Android did not export all annotations. (J#HYB-546)
+- Fixes an issue where the `exportXFDF` API on Android required the `Forms` license capability. (J#HYB-577)
+- Fixes an issue where the back button was missing on Android when using the `PSPDFKit.present` API. (J#HYB-549)
+
+## Previous releases
+
+### 2.14.0 - 30 Oct 2024
+
+- Adds the ability to hide the main toolbar on Android using a combination of configuration and style properties. (J#HYB-431)
+- Updates to Nutrient Android SDK 2024.6.1.
+- Updates to Nutrient iOS SDK 14.1.1.
+- Fixes an issue where the correct items weren't rendered when using the `menuItemGrouping` configuration property. (J#HYB-432)
+- Fixes an issue where a crash occurred when using the `toolbar.toolbarMenuItems` property and `enterAnnotationCreationMode` API on Android. (J#HYB-517)
+- Fixes an issue where some annotations would not be deleted on iOS when using the `removeAnnotations` API. (J#HYB-518)
+
+### 2.13.0 - 10 Sep 2024
+
+- Adds TypeScript type support to the `annotationPresets` property on the `PSPDFKitView` component. (J#HYB-395)
+- Adds support for a source document password to be specified when using the `processAnnotations` API. (J#HYB-453)
+- Adds support to select and deselect annotations programmatically. (J#HYB-447)
+- Updates to PSPDFKit 2024.5.1 for Android.
+- Updates to PSPDFKit 13.9.1 for iOS.
+- Fixes an issue where certain annotation presets weren't applied correctly. (J#HYB-395)
+- Fixes an issue where custom toolbar buttons were not applied on the Android toolbar. (J#HYB-482)
+- Fixes an issue where the `annotationTypes` parameter wasn't honored by the `processAnnotations` API. (J#HYB-495)
+- Fixes an issue where the `onDocumentLoadFailed` callback was not triggered when an incorrect document password was specified on Android. (J#HYB-491)
+- Fixes an issue where some measurement annotation presets were not applied when specified. (J#HYB-492)
+
+### 2.12.0 - 01 Aug 2024
+
+- Adds APIs belonging to the `PDFDocument` interface, moving them away from the global namespace. (J#HYB-406)
+- Adds support for using `React.RefObject` as a `PSPDFKitView` ref property. (J#HYB-444)
+- Updates for PSPDFKit 2024.3.1 for Android.
+- Updates for PSPDFKit 13.8.0 for iOS.
+- Fixes an issue where `PSPDFKitView` sometimes failed to load the document on React Native Android. (J#HYB-397)
+- Fixes an issue where Instant JSON containing widgets was not applied using the `addAnnotations` API on iOS. (J#HYB-413)
+- Fixes an issue where password protected documents could not be saved after annotation changes were made. (J#HYB-454)
+- Fixes an issue where the `onDocumentLoaded` callback was not called reliably on iOS. (J#HYB-480)
 
 ### 2.11.0 - 07 Jun 2024
 
@@ -8,8 +52,6 @@
 - Fixes an issue where calling `exitCurrentlyActiveMode` while not in annotation editing mode generates an exception on iOS. (J#HYB-373)
 - Fixes an issue where the annotation `uuid` isn't included in `onAnnotationTapped` callbacks. (J#HYB-374)
 - Fixes an issue where Instant configuration wasn't applied when using the `presentInstant` API on iOS. (J#HYB-375)
-
-## Previous Releases
 
 ### 2.10.0 - 06 May 2024
 
@@ -149,7 +191,7 @@
 
 ### 2.2.0 - 14 Feb 2022
 
-- This release requires you to update your Android project's `compileSdkVersion` to version 31. Please refer to [our migration guide](https://pspdfkit.com/guides/react-native/migration-guides/react-native-2-2-migration-guide) for this release.
+- This release requires you to update your Android project's `compileSdkVersion` to version 31. Please refer to [our migration guide](https://www.nutrient.io/guides/react-native/migration-guides/react-native-2-2-migration-guide) for this release.
 - Adds a `destroyView()` function to `PSPDFKitView` to be used as a workaround for crash caused by a [`react-native-screens` issue](https://github.com/software-mansion/react-native-screens/issues/1300) when navigating back. (#32960)
 - Improves the file structure of the Catalog sample project for better readability. (#32685)
 - Improves the file structure of the NativeCatalog sample project for better readability. (#32887)
