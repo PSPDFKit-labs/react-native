@@ -142,9 +142,12 @@
   return nil;
 }
 
-- (BOOL)enterAnnotationCreationMode {
+- (BOOL)enterAnnotationCreationMode:(PSPDFAnnotationString)annotationType {
   [self.pdfController setViewMode:PSPDFViewModeDocument animated:YES];
   [self.pdfController.annotationToolbarController updateHostView:self container:nil viewController:self.pdfController];
+    if (annotationType != nil) {
+        [self.pdfController.annotationStateManager setState:annotationType];
+    }
   return [self.pdfController.annotationToolbarController showToolbarAnimated:YES completion:NULL];
 }
 

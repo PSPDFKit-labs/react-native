@@ -19,6 +19,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.pspdfkit.annotations.AnnotationFlags;
 import com.pspdfkit.annotations.AnnotationType;
 import com.pspdfkit.ui.toolbar.ContextualToolbarMenuItem;
+import com.pspdfkit.ui.special_mode.controller.AnnotationTool;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -220,5 +221,33 @@ public class ConversionHelpers {
             default:
                 return ContextualToolbarMenuItem.Position.END;
         }
+    }
+
+    public static AnnotationTool convertAnnotationTool(String tool) {
+        if (tool == null) {
+            return AnnotationTool.NONE;
+        }
+
+        return switch (tool.toLowerCase()) {
+            case "highlight", "pspdfkit/markup/highlight" -> AnnotationTool.HIGHLIGHT;
+            case "ink", "pspdfkit/ink" -> AnnotationTool.INK;
+            case "text", "pspdfkit/text" -> AnnotationTool.FREETEXT;
+            case "note", "pspdfkit/note" -> AnnotationTool.NOTE;
+            case "line", "pspdfkit/shape/line" -> AnnotationTool.LINE;
+            case "square", "pspdfkit/shape/rectangle" -> AnnotationTool.SQUARE;
+            case "circle", "pspdfkit/shape/ellipse" -> AnnotationTool.CIRCLE;
+            case "polygon", "pspdfkit/shape/polygon" -> AnnotationTool.POLYGON;
+            case "polyline", "pspdfkit/shape/polyline" -> AnnotationTool.POLYLINE;
+            case "strikeout", "pspdfkit/markup/strikeout" -> AnnotationTool.STRIKEOUT;
+            case "underline", "pspdfkit/markup/underline" -> AnnotationTool.UNDERLINE;
+            case "squiggly", "pspdfkit/markup/squiggly" -> AnnotationTool.SQUIGGLY;
+            case "redaction", "pspdfkit/markup/redaction" -> AnnotationTool.REDACTION;
+            case "stamp", "pspdfkit/stamp" -> AnnotationTool.STAMP;
+            case "image", "pspdfkit/image" -> AnnotationTool.IMAGE;
+            case "sound", "pspdfkit/sound" -> AnnotationTool.SOUND;
+            case "comment-marker", "pspdfkit/comment-marker" ->
+                    AnnotationTool.INSTANT_COMMENT_MARKER;
+            default -> AnnotationTool.NONE;
+        };
     }
 }

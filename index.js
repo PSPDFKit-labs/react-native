@@ -195,20 +195,29 @@ class PSPDFKitView extends React.Component {
   /**
    * Enters annotation creation mode, showing the annotation creation toolbar.
    * @method enterAnnotationCreationMode
+   * @param { Annotation.Type } [annotationType] The annotation type that should be pre-selected when entering annotation creation mode.
    * @example
    * this.pdfRef.current.enterAnnotationCreationMode();
    * @memberof PSPDFKitView
    */
-  enterAnnotationCreationMode = function () {
+  enterAnnotationCreationMode = function (annotationType) {
     if (Platform.OS === 'android') {
+      let requestId = this._nextRequestId++;
+      let requestMap = this._requestMap;
+
+      let promise = new Promise(function (resolve, reject) {
+        requestMap[requestId] = { resolve: resolve, reject: reject };
+      });
+
       UIManager.dispatchViewManagerCommand(
         findNodeHandle(this._componentRef.current),
         this._getViewManagerConfig('RCTPSPDFKitView').Commands
           .enterAnnotationCreationMode,
-        [],
+          [requestId, annotationType],
       );
     } else if (Platform.OS === 'ios') {
       return NativeModules.PSPDFKitViewManager.enterAnnotationCreationMode(
+        annotationType,
         findNodeHandle(this._componentRef.current),
       );
     }

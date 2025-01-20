@@ -14,5 +14,6 @@
 @interface RCTConvert (PSPDFAnnotationToolbarConfiguration)
 
 + (PSPDFAnnotationToolbarConfiguration *)PSPDFAnnotationToolbarConfiguration:(id)json;
++ (PSPDFAnnotationString)PSPDFAnnotationStringFromName:(NSString *)name;
 
 @end

@@ -798,10 +798,17 @@ public class PdfView extends FrameLayout {
         return eventDispatcher;
     }
 
-    public void enterAnnotationCreationMode() {
-        pendingFragmentActions.add(getCurrentPdfFragment()
-            .observeOn(Schedulers.io())
-            .subscribe(PdfFragment::enterAnnotationCreationMode));
+    public void enterAnnotationCreationMode(@Nullable final String annotationType) {
+        if (annotationType == null) {
+            pendingFragmentActions.add(getCurrentPdfFragment()
+                    .observeOn(Schedulers.io())
+                    .subscribe(PdfFragment::enterAnnotationCreationMode));
+        } else {
+            AnnotationTool annotationTool = ConversionHelpers.convertAnnotationTool(annotationType);
+            pendingFragmentActions.add(getCurrentPdfFragment()
+                    .observeOn(Schedulers.io())
+                    .subscribe(fragment -> fragment.enterAnnotationCreationMode(annotationTool)));
+        }
     }
 
     public void exitCurrentlyActiveMode() {

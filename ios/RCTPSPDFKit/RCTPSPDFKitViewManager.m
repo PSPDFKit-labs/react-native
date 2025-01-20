@@ -234,10 +234,10 @@ RCT_CUSTOM_VIEW_PROPERTY(annotationContextualMenu, NSDictionary, RCTPSPDFKitView
   }
 }
 
-RCT_EXPORT_METHOD(enterAnnotationCreationMode:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(enterAnnotationCreationMode:(NSString *)annotationType reactTag:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   dispatch_async(dispatch_get_main_queue(), ^{
     RCTPSPDFKitView *component = (RCTPSPDFKitView *)[self.bridge.uiManager viewForReactTag:reactTag];
-    BOOL success = [component enterAnnotationCreationMode];
+    BOOL success = [component enterAnnotationCreationMode:[RCTConvert PSPDFAnnotationStringFromName:annotationType]];
     if (success) {
       resolve(@(success));
     } else {

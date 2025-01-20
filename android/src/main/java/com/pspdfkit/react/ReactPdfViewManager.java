@@ -299,7 +299,16 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
     public void receiveCommand(@NonNull final PdfView root, int commandId, @Nullable ReadableArray args) {
         switch (commandId) {
             case COMMAND_ENTER_ANNOTATION_CREATION_MODE:
-                root.enterAnnotationCreationMode();
+                if (args != null) {
+                    final int requestId = args.getInt(0);
+                    if (args.size() == 2) {
+                        final String annotationType = args.getString(1);
+                        root.enterAnnotationCreationMode(annotationType);
+                    } else {
+                        root.enterAnnotationCreationMode(null);
+                    }
+                    root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, true));
+                }
                 break;
             case COMMAND_EXIT_CURRENTLY_ACTIVE_MODE:
                 root.exitCurrentlyActiveMode();

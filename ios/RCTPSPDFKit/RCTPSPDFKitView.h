@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) id configurationJSON;
 
 /// Annotation Toolbar
-- (BOOL)enterAnnotationCreationMode;
+- (BOOL)enterAnnotationCreationMode:(PSPDFAnnotationString)annotationType;
 - (BOOL)exitCurrentlyActiveMode;
 
 /// Document

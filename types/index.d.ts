@@ -834,11 +834,12 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
     /**
      * Enters annotation creation mode, showing the annotation creation toolbar.
      * @method enterAnnotationCreationMode
+     * @param { Annotation.Type } [annotationType] The annotation type that should be pre-selected when entering annotation creation mode.
      * @example
      * this.pdfRef.current.enterAnnotationCreationMode();
      * @memberof PSPDFKitView
      */
-    enterAnnotationCreationMode: () => any;
+    enterAnnotationCreationMode: (annotationType?: Annotation.Type) => any;
     /**
      * Exits the currently active mode, hiding all toolbars.
      * @method exitCurrentlyActiveMode
