@@ -162,6 +162,8 @@ public class ReactGroupingRule extends PresetMenuItemGroupingRule {
                 return com.pspdfkit.R.id.pspdf__annotation_creation_toolbar_item_measurement_area_rect;
             case "area_circle":
                 return com.pspdfkit.R.id.pspdf__annotation_creation_toolbar_item_measurement_area_ellipse;
+            case "selection_tool":
+                return com.pspdfkit.R.id.pspdf__annotation_creation_toolbar_item_multi_selection;
         }
 
         Log.i(TAG, String.format("Received unknown menu item %s.", name));
