@@ -20,11 +20,33 @@ import com.pspdfkit.annotations.AnnotationFlags;
 import com.pspdfkit.annotations.AnnotationType;
 import com.pspdfkit.ui.toolbar.ContextualToolbarMenuItem;
 import com.pspdfkit.ui.special_mode.controller.AnnotationTool;
+import com.pspdfkit.ui.special_mode.controller.AnnotationToolVariant;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
 
 public class ConversionHelpers {
+
+    /**
+     * Result class for annotation tool conversion containing the tool and its optional variant.
+     */
+    public static class AnnotationToolResult {
+        private final AnnotationTool annotationTool;
+        private final @Nullable AnnotationToolVariant annotationToolVariant;
+
+        public AnnotationToolResult(AnnotationTool annotationTool, @Nullable AnnotationToolVariant annotationToolVariant) {
+            this.annotationTool = annotationTool;
+            this.annotationToolVariant = annotationToolVariant;
+        }
+
+        public AnnotationTool getAnnotationTool() {
+            return annotationTool;
+        }
+
+        public @Nullable AnnotationToolVariant getAnnotationToolVariant() {
+            return annotationToolVariant;
+        }
+    }
 
     public static EnumSet<AnnotationType> getAnnotationTypes(@Nullable final ReadableArray types) {
         if (types == null) {
@@ -223,31 +245,65 @@ public class ConversionHelpers {
         }
     }
 
-    public static AnnotationTool convertAnnotationTool(String tool) {
+    public static AnnotationToolResult convertAnnotationTool(String tool) {
         if (tool == null) {
-            return AnnotationTool.NONE;
+            return new AnnotationToolResult(AnnotationTool.NONE, null);
         }
 
         return switch (tool.toLowerCase()) {
-            case "highlight", "pspdfkit/markup/highlight" -> AnnotationTool.HIGHLIGHT;
-            case "ink", "pspdfkit/ink" -> AnnotationTool.INK;
-            case "text", "pspdfkit/text" -> AnnotationTool.FREETEXT;
-            case "note", "pspdfkit/note" -> AnnotationTool.NOTE;
-            case "line", "pspdfkit/shape/line" -> AnnotationTool.LINE;
-            case "square", "pspdfkit/shape/rectangle" -> AnnotationTool.SQUARE;
-            case "circle", "pspdfkit/shape/ellipse" -> AnnotationTool.CIRCLE;
-            case "polygon", "pspdfkit/shape/polygon" -> AnnotationTool.POLYGON;
-            case "polyline", "pspdfkit/shape/polyline" -> AnnotationTool.POLYLINE;
-            case "strikeout", "pspdfkit/markup/strikeout" -> AnnotationTool.STRIKEOUT;
-            case "underline", "pspdfkit/markup/underline" -> AnnotationTool.UNDERLINE;
-            case "squiggly", "pspdfkit/markup/squiggly" -> AnnotationTool.SQUIGGLY;
-            case "redaction", "pspdfkit/markup/redaction" -> AnnotationTool.REDACTION;
-            case "stamp", "pspdfkit/stamp" -> AnnotationTool.STAMP;
-            case "image", "pspdfkit/image" -> AnnotationTool.IMAGE;
-            case "sound", "pspdfkit/sound" -> AnnotationTool.SOUND;
-            case "comment-marker", "pspdfkit/comment-marker" ->
-                    AnnotationTool.INSTANT_COMMENT_MARKER;
-            default -> AnnotationTool.NONE;
+            case "highlight" ->
+                    new AnnotationToolResult(AnnotationTool.HIGHLIGHT, null);
+            case "highlighter" ->
+                    new AnnotationToolResult(AnnotationTool.HIGHLIGHT, AnnotationToolVariant.fromPreset(AnnotationToolVariant.Preset.HIGHLIGHTER));
+            case "ink", "pen" ->
+                    new AnnotationToolResult(AnnotationTool.INK, AnnotationToolVariant.fromPreset(AnnotationToolVariant.Preset.PEN));
+            case "magic_ink" ->
+                    new AnnotationToolResult(AnnotationTool.INK, AnnotationToolVariant.fromPreset(AnnotationToolVariant.Preset.MAGIC));
+            case "text", "freetext" ->
+                    new AnnotationToolResult(AnnotationTool.FREETEXT, null);
+            case "freetext_callout" ->
+                    new AnnotationToolResult(AnnotationTool.FREETEXT, AnnotationToolVariant.fromPreset(AnnotationToolVariant.Preset.CALLOUT));
+            case "note" ->
+                    new AnnotationToolResult(AnnotationTool.NOTE, null);
+            case "line" ->
+                    new AnnotationToolResult(AnnotationTool.LINE, null);
+            case "arrow" ->
+                    new AnnotationToolResult(AnnotationTool.LINE, AnnotationToolVariant.fromPreset(AnnotationToolVariant.Preset.ARROW));
+            case "square", "rectangle", "area_square" ->
+                    new AnnotationToolResult(AnnotationTool.SQUARE, null);
+            case "circle", "ellipse", "area_circle" ->
+                    new AnnotationToolResult(AnnotationTool.CIRCLE, null);
+            case "polygon", "area_polygon" ->
+                    new AnnotationToolResult(AnnotationTool.POLYGON, null);
+            case "cloudy_polygon" ->
+                    new AnnotationToolResult(AnnotationTool.POLYGON, AnnotationToolVariant.fromPreset(AnnotationToolVariant.Preset.CLOUDY));
+            case "polyline" ->
+                    new AnnotationToolResult(AnnotationTool.POLYLINE, null);
+            case "strikeout" ->
+                    new AnnotationToolResult(AnnotationTool.STRIKEOUT, null);
+            case "underline" ->
+                    new AnnotationToolResult(AnnotationTool.UNDERLINE, null);
+            case "squiggly" ->
+                    new AnnotationToolResult(AnnotationTool.SQUIGGLY, null);
+            case "redaction"->
+                    new AnnotationToolResult(AnnotationTool.REDACTION, null);
+            case "stamp" ->
+                    new AnnotationToolResult(AnnotationTool.STAMP, null);
+            case "signature" ->
+                    new AnnotationToolResult(AnnotationTool.SIGNATURE, null);
+            case "image" ->
+                    new AnnotationToolResult(AnnotationTool.IMAGE, null);
+            case "sound" ->
+                    new AnnotationToolResult(AnnotationTool.SOUND, null);
+            case "distance" ->
+                    new AnnotationToolResult(AnnotationTool.MEASUREMENT_DISTANCE, null);
+            case "perimeter" ->
+                    new AnnotationToolResult(AnnotationTool.MEASUREMENT_PERIMETER, null);
+            case "eraser" ->
+                    new AnnotationToolResult(AnnotationTool.ERASER, null);
+            case "comment-marker" ->
+                    new AnnotationToolResult(AnnotationTool.INSTANT_COMMENT_MARKER, null);
+            default -> new AnnotationToolResult(AnnotationTool.NONE, null);
         };
     }
 }

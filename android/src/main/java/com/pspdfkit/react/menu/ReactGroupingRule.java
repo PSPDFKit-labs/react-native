@@ -108,6 +108,8 @@ public class ReactGroupingRule extends PresetMenuItemGroupingRule {
                 return com.pspdfkit.R.id.pspdf__annotation_creation_toolbar_item_signature;
             case "pen":
                 return com.pspdfkit.R.id.pspdf__annotation_creation_toolbar_item_ink_pen;
+            case "ink":
+                return com.pspdfkit.R.id.pspdf__annotation_creation_toolbar_item_ink_pen;
             case "arrow":
                 return com.pspdfkit.R.id.pspdf__annotation_creation_toolbar_item_line_arrow;
             case "sound":

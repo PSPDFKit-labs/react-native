@@ -101,6 +101,7 @@ import com.pspdfkit.ui.fonts.FontManager;
 import com.pspdfkit.ui.search.PdfSearchView;
 import com.pspdfkit.ui.search.PdfSearchViewInline;
 import com.pspdfkit.ui.special_mode.controller.AnnotationTool;
+import com.pspdfkit.ui.special_mode.controller.AnnotationToolVariant;
 import com.pspdfkit.ui.toolbar.ContextualToolbarMenuItem;
 import com.pspdfkit.ui.toolbar.grouping.MenuItemGroupingRule;
 
@@ -804,10 +805,16 @@ public class PdfView extends FrameLayout {
                     .observeOn(Schedulers.io())
                     .subscribe(PdfFragment::enterAnnotationCreationMode));
         } else {
-            AnnotationTool annotationTool = ConversionHelpers.convertAnnotationTool(annotationType);
-            pendingFragmentActions.add(getCurrentPdfFragment()
-                    .observeOn(Schedulers.io())
-                    .subscribe(fragment -> fragment.enterAnnotationCreationMode(annotationTool)));
+            ConversionHelpers.AnnotationToolResult annotationTool = ConversionHelpers.convertAnnotationTool(annotationType);
+            if (annotationTool.getAnnotationToolVariant() == null) {
+                pendingFragmentActions.add(getCurrentPdfFragment()
+                        .observeOn(Schedulers.io())
+                        .subscribe(fragment -> fragment.enterAnnotationCreationMode(annotationTool.getAnnotationTool())));
+            } else {
+                pendingFragmentActions.add(getCurrentPdfFragment()
+                        .observeOn(Schedulers.io())
+                        .subscribe(fragment -> fragment.enterAnnotationCreationMode(annotationTool.getAnnotationTool(), annotationTool.getAnnotationToolVariant())));
+            }
         }
     }
 
