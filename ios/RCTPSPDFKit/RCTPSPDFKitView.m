@@ -260,7 +260,9 @@
         } else if ([element isKindOfClass:[UIMenu class]]) {
             UIMenu *submenu = (UIMenu *)element;
             UIMenu *updatedSubmenu = [self removeActionWithIdentifier:identifier fromMenu:submenu];
-            [updatedChildren addObject:updatedSubmenu];
+            if (![submenu.identifier isEqualToString:identifier]) {
+                [updatedChildren addObject:updatedSubmenu];
+            }
         } else {
             [updatedChildren addObject:element];
         }
