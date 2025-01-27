@@ -248,6 +248,27 @@
   VALIDATE_DOCUMENT(document)
 }
 
+- (UIMenu *)removeActionWithIdentifier:(NSString *)identifier fromMenu:(UIMenu *)menu {
+    NSMutableArray *updatedChildren = [NSMutableArray array];
+    
+    for (id element in menu.children) {
+        if ([element isKindOfClass:[UIAction class]]) {
+            UIAction *action = (UIAction *)element;
+            if (![action.identifier isEqualToString:identifier]) {
+                [updatedChildren addObject:action];
+            }
+        } else if ([element isKindOfClass:[UIMenu class]]) {
+            UIMenu *submenu = (UIMenu *)element;
+            UIMenu *updatedSubmenu = [self removeActionWithIdentifier:identifier fromMenu:submenu];
+            [updatedChildren addObject:updatedSubmenu];
+        } else {
+            [updatedChildren addObject:element];
+        }
+    }
+    
+    return [menu menuByReplacingChildren:updatedChildren];
+}
+
 - (UIMenu *)pdfViewController:(PSPDFViewController *)sender menuForAnnotations:(NSArray<PSPDFAnnotation *> *)annotations onPageView:(PSPDFPageView *)pageView appearance:(PSPDFEditMenuAppearance)appearance suggestedMenu:(UIMenu *)suggestedMenu {
     
     NSDictionary *annotationButtons = [_sessionStorage getAnnotationContextualMenuItems];
@@ -270,10 +291,12 @@
             }
             return newMenu;
         } else {
-            return suggestedMenu;
+            UIMenu *filteredMenu = [self removeActionWithIdentifier:@"com.pspdfkit.menu.type" fromMenu:suggestedMenu];
+            return filteredMenu;
         }
     } else {
-        return suggestedMenu;
+        UIMenu *filteredMenu = [self removeActionWithIdentifier:@"com.pspdfkit.menu.type" fromMenu:suggestedMenu];
+        return filteredMenu;
     }
 }
 
