@@ -67,12 +67,14 @@ export class ProgrammaticFormFilling extends BaseExampleAutoHidingHeaderComponen
             [x: string]: any; error: any }) => {
               console.log(event);
             
-            if (event.change === 'added' && this.signatureApplied == false) {
-              const updatedAnnotation = this.transformAnnotationCoordinates(event.annotations[0], {x: 10, y: 20});
-              updatedAnnotation.pageIndex = 1;
-              await this.pdfRef.current?.getDocument().addAnnotations([updatedAnnotation]);
-              this.signatureApplied = true;
-            }
+            if (event.change === 'added' && 
+              event.annotations[0].isSignature === true && 
+              this.signatureApplied == false) {
+                const updatedAnnotation = this.transformAnnotationCoordinates(event.annotations[0], {x: 10, y: 20});
+                updatedAnnotation.pageIndex = 1;
+                await this.pdfRef.current?.getDocument().addAnnotations([updatedAnnotation]);
+                this.signatureApplied = true;
+              }
           }}
           style={styles.pdfColor}
         />
