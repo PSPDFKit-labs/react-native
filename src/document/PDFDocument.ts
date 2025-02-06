@@ -128,15 +128,28 @@ export class PDFDocument {
    /**
     * @method addAnnotations
     * @memberof PDFDocument
-    * @param {Record} instantJSON The annotations to add to the document in InstantJSON format. Ensure that the "annotations" key is included with an array of all the annotations as value.
-    * @description Adds all the specified annotations in the document.
+    * @param {Array<any> | Array<AnnotationType> | Record<string, any>} annotations Array of annotations in Instant JSON format to add to the document.
+    * @description Adds all the specified annotations to the document. For complex annotations or annotations with attachments, use the ```applyInstantJSON``` API.
     * @example
     * const result = await this.pdfRef.current?.getDocument().addAnnotations(annotations);
-    * @returns { Promise<boolean> } A promise containing the result of the operation. ```true``` if the annotations were added, ```false``` otherwise.
+    * @returns { Promise<boolean> } A promise containing the result of the operation. ```true``` if the annotations were added, and ```false``` if an error occurred.
     */
-    addAnnotations(instantJSON: Record<string, any>): Promise<boolean> {
-      return NativeModules.PDFDocumentManager.addAnnotations(findNodeHandle(this.pdfViewRef), instantJSON);
-    }
+   addAnnotations(annotations: Array<any> | Record<string, any>): Promise<boolean> {
+    return NativeModules.PDFDocumentManager.addAnnotations(findNodeHandle(this.pdfViewRef), annotations);
+  }
+
+  /**
+   * @method applyInstantJSON
+   * @memberof PDFDocument
+   * @param {Record<string, any>} documentJSON The full Instant JSON object to add to the document as a ```DocumentJSON``` object.
+   * @description Adds the specified Document JSON data to the document.
+   * @example
+   * const result = await this.pdfRef.current?.getDocument().applyInstantJSON(documentJSON);
+   * @returns { Promise<boolean> } A promise containing the result of the operation. ```true``` if the document JSON was applied, and ```false``` if an error occurred.
+   */
+  applyInstantJSON(documentJSON: Record<string, any>): Promise<boolean> {
+    return NativeModules.PDFDocumentManager.applyInstantJSON(findNodeHandle(this.pdfViewRef), documentJSON);
+  }
 
    /**
     * @method importXFDF

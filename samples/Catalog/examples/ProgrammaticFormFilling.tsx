@@ -14,6 +14,7 @@ import { PSPDFKit } from '../helpers/PSPDFKit';
 
 export class ProgrammaticFormFilling extends BaseExampleAutoHidingHeaderComponent {
   pdfRef: React.RefObject<PSPDFKitView>;
+  signatureApplied = false;
 
   constructor(props: any) {
     super(props);
@@ -30,6 +31,25 @@ export class ProgrammaticFormFilling extends BaseExampleAutoHidingHeaderComponen
     });
   }
 
+  transformAnnotationCoordinates(annotation: Record<string, any>, offset: { x: number, y: number }): Record<string, any> {
+    // Create a deep copy of the annotation to avoid mutating the original
+    const transformed = JSON.parse(JSON.stringify(annotation));
+    
+    // Transform bbox [x, y, width, height]
+    transformed.bbox[0] += offset.x; // x position
+    transformed.bbox[1] += offset.y; // y position
+    
+    // Transform all points in lines.points
+    transformed.lines.points = transformed.lines.points.map((stroke: any[]) => 
+      stroke.map(point => [
+        point[0] + offset.x,
+        point[1] + offset.y
+      ])
+    );
+    
+    return transformed;
+  }
+
   override render() {
     return (
       <View style={styles.flex}>
@@ -43,25 +63,15 @@ export class ProgrammaticFormFilling extends BaseExampleAutoHidingHeaderComponen
             disableAutomaticSaving: true,
             signatureSavingStrategy: 'saveIfSelected',
           }}
-          onAnnotationsChanged={(event: { error: any }) => {
-            if (event.error) {
-              Alert.alert('PSPDFKit', event.error);
-            } else {
-              if (this.state.alertVisible === false) {
-                Alert.alert(
-                  'PSPDFKit',
-                  'Annotations changed: ' + JSON.stringify(event),
-                  [
-                    {
-                      text: 'OK',
-                      onPress: () => {
-                        this.setState({ alertVisible: false });
-                      },
-                    },
-                  ],
-                );
-                this.setState({ alertVisible: true });
-              }
+          onAnnotationsChanged={async (event: {
+            [x: string]: any; error: any }) => {
+              console.log(event);
+            
+            if (event.change === 'added' && this.signatureApplied == false) {
+              const updatedAnnotation = this.transformAnnotationCoordinates(event.annotations[0], {x: 10, y: 20});
+              updatedAnnotation.pageIndex = 1;
+              await this.pdfRef.current?.getDocument().addAnnotations([updatedAnnotation]);
+              this.signatureApplied = true;
             }
           }}
           style={styles.pdfColor}
