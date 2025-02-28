@@ -865,6 +865,12 @@
     }
 }
 
+- (void)updatePageIndex:(PSPDFPageIndex)pageIndex {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.pdfController.pageIndex = pageIndex;
+    });
+}
+
 // MARK - Delegates
 
 - (void)didReceiveAnnotationChangeWithChange:(NSString *)change annotations:(NSArray<PSPDFAnnotation *> *)annotations {
