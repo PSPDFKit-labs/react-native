@@ -110,8 +110,8 @@ NSString *const annotationSelectionTool = @"selection_tool";
       annotationFile: PSPDFAnnotationStringFile,
       annotationSelectionTool: PSPDFAnnotationStringSelectionTool
     };
-
-  return nameToAnnotationStringMapping[name];
+    
+  return nameToAnnotationStringMapping[[name lowercaseString]];
 }
 
 + (PSPDFAnnotationString)PSPDFAnnotationVariantStringFromName:(NSString *)name {
