@@ -38,6 +38,8 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.pspdfkit.PSPDFKit;
+import com.pspdfkit.annotations.Annotation;
+import com.pspdfkit.annotations.AnnotationProvider;
 import com.pspdfkit.annotations.AnnotationType;
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.document.PdfDocumentLoader;
@@ -61,6 +63,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -442,6 +445,31 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
                     }
                 });
             }
+
+            pdfActivity.getPdfFragment().addOnAnnotationUpdatedListener(new AnnotationProvider.OnAnnotationUpdatedListener() {
+                @Override
+                public void onAnnotationCreated(@NonNull Annotation annotation) {
+                    String documentID = pdfActivity.getPdfFragment().getDocument().getDocumentIdString();
+                    NutrientNotificationCenter.INSTANCE.annotationsChanged("added", annotation, documentID);
+                }
+
+                @Override
+                public void onAnnotationUpdated(@NonNull Annotation annotation) {
+                    String documentID = pdfActivity.getPdfFragment().getDocument().getDocumentIdString();
+                    NutrientNotificationCenter.INSTANCE.annotationsChanged("changed", annotation, documentID);
+                }
+
+                @Override
+                public void onAnnotationRemoved(@NonNull Annotation annotation) {
+                    String documentID = pdfActivity.getPdfFragment().getDocument().getDocumentIdString();
+                    NutrientNotificationCenter.INSTANCE.annotationsChanged("removed", annotation, documentID);
+                }
+
+                @Override
+                public void onAnnotationZOrderChanged(int i, @NonNull List<Annotation> list, @NonNull List<Annotation> list1) {
+                    // Nothing to do here
+                }
+            });
         }
     }
 

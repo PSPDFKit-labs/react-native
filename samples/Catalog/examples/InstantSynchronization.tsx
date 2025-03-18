@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Linking, Switch, Text, TextInput, View } from 'react-native';
+import { Alert, EmitterSubscription, Linking, NativeEventEmitter, NativeModules, Switch, Text, TextInput, View } from 'react-native';
 
 import PrimaryButton from '../components/primaryButton';
 import UrlInput from '../components/urlInput';
@@ -8,9 +8,11 @@ import { loadDocument } from '../helpers/api/ApiClient';
 import { BaseExampleAutoHidingHeaderComponent } from '../helpers/BaseExampleAutoHidingHeaderComponent';
 import { PSPDFKit } from '../helpers/PSPDFKit';
 import defaultStyles from '../styles/styles';
+import { NotificationCenter } from 'react-native-pspdfkit';
 
 export default class InstantSynchronization extends BaseExampleAutoHidingHeaderComponent {
-  subscription = null;
+  subscriptions = Array<EmitterSubscription>();
+
   constructor(props: any) {
     super(props);
     this.state = {
@@ -20,6 +22,41 @@ export default class InstantSynchronization extends BaseExampleAutoHidingHeaderC
       isUrlInputPresented: false,
       syncAnnotations: true,
     };
+  }
+
+  override componentDidMount() {
+
+    // Added
+    const addedSubscription = new NativeEventEmitter(NativeModules.PSPDFKit).addListener(NotificationCenter.AnnotationsEvent.ADDED, (event: any) => {
+      console.log('PSPDFKit', JSON.stringify(event));
+    });
+    this.subscriptions.push(addedSubscription);
+
+    // // Removed
+    // const removedSubscription = new NativeEventEmitter(NativeModules.PSPDFKit).addListener(NotificationCenter.AnnotationsEvent.REMOVED, (event: any) => {
+    //   console.log('PSPDFKit', JSON.stringify(event));
+    // });
+    // this.subscriptions.push(removedSubscription);
+
+    // // Changed
+    // const changedSubscription = new NativeEventEmitter(NativeModules.PSPDFKit).addListener(NotificationCenter.AnnotationsEvent.CHANGED, (event: any) => {
+    //   console.log('PSPDFKit', JSON.stringify(event));
+    // });
+    // this.subscriptions.push(changedSubscription);
+
+    // @ts-ignore
+    NativeModules.PSPDFKit.handleListenerAdded(NotificationCenter.AnnotationsEvent.ADDED);
+    // // @ts-ignore
+    // NativeModules.PSPDFKit.handleListenerAdded(NotificationCenter.AnnotationsEvent.REMOVED);
+    // // @ts-ignore
+    // NativeModules.PSPDFKit.handleListenerAdded(NotificationCenter.AnnotationsEvent.CHANGED);
+  }
+
+  override componentWillUnmount() {
+    this.subscriptions.forEach((subscription: EmitterSubscription) => {
+      subscription.remove();
+    });
+    this.subscriptions = [];
   }
 
   updateSyncDelay = async (delayValue: string) => {

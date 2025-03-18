@@ -31,6 +31,7 @@
 @implementation RCTPSPDFKitManager
 
 PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-environment";
+static char *associatedObjectKey;
 
 RCT_EXPORT_MODULE(PSPDFKit)
 
@@ -156,6 +157,11 @@ RCT_EXPORT_METHOD(presentInstant: (NSDictionary*)documentData configuration: (NS
     }];
 
     InstantDocumentViewController *instantViewController = [[InstantDocumentViewController alloc] initWithDocumentInfo:documentInfo configuration:pdfConfiguration error:&error];
+    objc_setAssociatedObject(self, associatedObjectKey, instantViewController, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationChangedNotification object:nil];
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationsAddedNotification object:nil];
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationsRemovedNotification object:nil];
 
     if ([delay doubleValue] > 0) {
         instantViewController.documentDescriptor.delayForSyncingLocalChanges = [delay doubleValue];
@@ -171,6 +177,14 @@ RCT_EXPORT_METHOD(presentInstant: (NSDictionary*)documentData configuration: (NS
         NSLog(@"Error presenting instant view controller %@", error.localizedDescription);
         NSString* errorMessage = [NSString stringWithFormat: @"Failed to present instant document. %@", error.localizedDescription];
         reject(@"error", errorMessage, nil);
+    }
+}
+
+- (void)annotationChangedNotification:(NSNotification *)notification {
+    InstantDocumentViewController *instantViewController = objc_getAssociatedObject(self, associatedObjectKey);
+    if (instantViewController.document.documentIdString != nil) {
+        [NutrientNotificationCenter.shared annotationsChangedWithNotification:notification
+                                                                   documentID:instantViewController.document.documentIdString];
     }
 }
 
