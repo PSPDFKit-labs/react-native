@@ -180,6 +180,9 @@ public class PdfView extends FrameLayout {
     /** An internal id we generate so we can track if fragments found belong to this specific PdfView instance. */
     private int internalId;
 
+    /** Runnable to execute fragment transactions on the main thread */
+    private Runnable fragmentTransactionRunnable;
+
     /** We keep track if the navigation button should be shown so we can show it when the inline search view is closed. */
     private boolean isNavigationButtonShown = false;
     /** We keep track if the inline search view is shown since we don't want to add a second navigation button while it is shown. */
@@ -208,8 +211,6 @@ public class PdfView extends FrameLayout {
     @Nullable
     private ReadableArray measurementValueConfigurations;
 
-    private FragmentContainerView fragmentContainerView;
-
     private ReactApplicationContext reactApplicationContext;
 
     public PdfView(@NonNull Context context) {
@@ -233,7 +234,6 @@ public class PdfView extends FrameLayout {
     }
 
     private void init() {
-        fragmentContainerView = (FragmentContainerView) LayoutInflater.from(getContext()).inflate(R.layout.pspdf__fragment_container, null);
         pdfViewModeController = new PdfViewModeController(this);
 
         Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
@@ -265,7 +265,6 @@ public class PdfView extends FrameLayout {
 
     public void setFragmentTag(String fragmentTag) {
         this.fragmentTag = fragmentTag;
-        setupFragment(false);
     }
 
     public void setInitialConfiguration(PdfActivityConfiguration configuration) {
@@ -545,11 +544,12 @@ public class PdfView extends FrameLayout {
 
             if (pdfFragment == null) {
                 if (recreate == true) {
-                    pdfFragment = PdfUiFragmentBuilder.fromUri(getContext(), Uri.parse(this.documentPath)).fragmentClass(ReactPdfUiFragment.class).build();
+                    pdfFragment = PdfUiFragmentBuilder.fromUri(getContext(), Uri.parse(this.documentPath)).fragmentClass(ReactPdfUiFragment.class).pdfFragmentTag(fragmentTag).build();
                 } else if (document != null) {
                     pdfFragment = PdfUiFragmentBuilder.fromDocumentDescriptor(getContext(), DocumentDescriptor.fromDocument(document))
                         .configuration(configuration)
                         .fragmentClass(ReactPdfUiFragment.class)
+                        .pdfFragmentTag(fragmentTag)
                         .build();
                 } else {
                     return;
@@ -564,11 +564,12 @@ public class PdfView extends FrameLayout {
                         .commitNow();
                     // The document changed, create a new PdfFragment.
                     if (recreate == true) {
-                        pdfFragment = PdfUiFragmentBuilder.fromUri(getContext(), Uri.parse(this.documentPath)).fragmentClass(ReactPdfUiFragment.class).build();
+                        pdfFragment = PdfUiFragmentBuilder.fromUri(getContext(), Uri.parse(this.documentPath)).fragmentClass(ReactPdfUiFragment.class).pdfFragmentTag(fragmentTag).build();
                     } else {
                         pdfFragment = PdfUiFragmentBuilder.fromDocumentDescriptor(getContext(), DocumentDescriptor.fromDocument(document))
                                 .configuration(configuration)
                                 .fragmentClass(ReactPdfUiFragment.class)
+                                .pdfFragmentTag(fragmentTag)
                                 .build();
                     }
                     prepareFragment(pdfFragment, true);
@@ -592,49 +593,48 @@ public class PdfView extends FrameLayout {
 
     private void prepareFragment(final PdfUiFragment pdfUiFragment, final boolean attachFragment) {
         if (attachFragment) {
+            fragmentTransactionRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        PdfUiFragment currentPdfUiFragment = (PdfUiFragment) fragmentManager.findFragmentByTag(fragmentTag);
+
+                        if (currentPdfUiFragment != null) {
+                            // There is already a fragment, replace it with the latest one
+                            fragmentManager
+                                    .beginTransaction()
+                                    .remove(currentPdfUiFragment)
+                                    .add(getId(), pdfUiFragment, fragmentTag)
+                                    .commitNowAllowingStateLoss();
+                        } else {
+                            fragmentManager
+                                    .beginTransaction()
+                                    .add(getId(), pdfUiFragment, fragmentTag)
+                                    .commitNowAllowingStateLoss();
+                        }
+                        postFragmentSetup(pdfUiFragment);
+                    } catch (Exception e) {
+                        // Could not add fragment
+                    }
+                }
+            };
+
             OnAttachStateChangeListener stateChangeListener = new OnAttachStateChangeListener() {
                 @Override
                 public void onViewAttachedToWindow(@NonNull View view) {
-
-                    Handler mainHandler = new Handler(getContext().getMainLooper());
-                    Runnable myRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                PdfUiFragment currentPdfUiFragment = (PdfUiFragment) fragmentManager.findFragmentByTag(fragmentTag);
-
-                                if (currentPdfUiFragment != null) {
-                                    // There is already a fragment inside the FragmentContainer, replace it with the latest one.
-                                    fragmentManager
-                                            .beginTransaction()
-                                            .remove(currentPdfUiFragment)
-                                            .add(R.id.pspdf__fragment_container
-                                                    , pdfUiFragment, fragmentTag)
-                                            .commitNowAllowingStateLoss();
-                                } else {
-                                    fragmentManager
-                                            .beginTransaction()
-                                            .add(R.id.pspdf__fragment_container
-                                                    , pdfUiFragment, fragmentTag)
-                                            .commitNowAllowingStateLoss();
-                                }
-                                postFragmentSetup(pdfUiFragment);
-                            } catch (Exception e) {
-                                // Could not add fragment
-                            }
-                        }
-                    };
-                    mainHandler.post(myRunnable);
-                    fragmentContainerView.removeOnAttachStateChangeListener(this);
+                    new Handler(getContext().getMainLooper()).post(fragmentTransactionRunnable);
+                    removeOnAttachStateChangeListener(this);
                 }
 
                 @Override
                 public void onViewDetachedFromWindow(@NonNull View view) {}
             };
-
-            fragmentContainerView.addOnAttachStateChangeListener(stateChangeListener);
-            removeAllViews();
-            addView(fragmentContainerView);
+            
+            if (isAttachedToWindow()) {
+                new Handler(getContext().getMainLooper()).post(fragmentTransactionRunnable);
+            } else {
+                addOnAttachStateChangeListener(stateChangeListener);
+            }
         } else {
             attachPdfFragmentListeners(pdfUiFragment);
         }

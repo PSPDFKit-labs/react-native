@@ -12,5 +12,5 @@
 #import <React/RCTEventEmitter.h>
 
 @interface RCTPSPDFKitManager: RCTEventEmitter <RCTBridgeModule>
-
+- (void)cleanupNotificationObservers;
 @end

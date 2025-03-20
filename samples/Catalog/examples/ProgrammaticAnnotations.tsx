@@ -1,6 +1,6 @@
 import React from 'react';
 import { Alert, Button, processColor, View } from 'react-native';
-import PSPDFKitView, { Annotation, AnnotationAttachment, AnnotationType, DocumentJSON, InkAnnotation } from 'react-native-pspdfkit';
+import PSPDFKitView, { Annotation, AnnotationAttachment, AnnotationType, DocumentJSON, ImageAnnotation, InkAnnotation } from 'react-native-pspdfkit';
 import fileSystem from 'react-native-fs';
 
 import { exampleDocumentPath, pspdfkitColor } from '../configuration/Constants';
@@ -570,12 +570,36 @@ static imageAnnotation: DocumentJSON = {
                     fromUrl:'https://github.com/PSPDFKit/react-native/blob/master/samples/Catalog/assets/logo-flat.png?raw=true', 
                     toFile: filePath
                   }).promise.then(async (_result) => {
-                    const base64ImageData = await fileSystem.readFile(filePath, 'base64');
-                    const attachment = ProgrammaticAnnotations.imageAnnotation.attachments?.['492adff9842bff7dcb81a20950870be8a0bb665c8d48175680c1e5e1070243ff'] as AnnotationAttachment;
-                    if (attachment) {
-                      attachment.binary = base64ImageData;
-                    }
-                  this.pdfRef.current?.getDocument().applyInstantJSON(ProgrammaticAnnotations.imageAnnotation)
+                  
+                  const base64ImageData = await fileSystem.readFile(filePath, 'base64');
+                  
+                  const attachmentId = "492adff9842bff7dcb81a20950870be8a0bb665c8d48175680c1e5e1070243ff";
+                  const imageAnnotation: ImageAnnotation = {
+                    bbox: [229, 426, 125, 125],
+                    contentType: "image/png",
+                    createdAt: new Date().toISOString(),
+                    creatorName: "Test User",
+                    description: "Test",
+                    id: "455f261c88f94294a05ebeb494c96cb9",
+                    imageAttachmentId: attachmentId,
+                    name: "my-custom-image-annotation",
+                    opacity: 1,
+                    pageIndex: 0,
+                    rotation: 0,
+                    subject: "Test",
+                    type: "pspdfkit/image",
+                    updatedAt: new Date().toISOString(),
+                    v: 2,
+                };
+
+                const attachments: Record<string, AnnotationAttachment> = {
+                  [attachmentId]: {
+                    binary: base64ImageData,
+                    contentType: "image/png",
+                  },
+                };
+
+                this.pdfRef.current?.getDocument().addAnnotations([imageAnnotation], attachments)
                     .then(result => {
                       if (result) {
                         Alert.alert(

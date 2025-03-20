@@ -22,6 +22,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 
+import android.graphics.PointF;
+import android.view.MotionEvent;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -285,6 +288,20 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
     }
 
     @ReactMethod
+    public void setupInstantDocument(@Nullable int reference, @Nullable Promise promise) {
+        try {
+            if (resumedActivity instanceof PdfActivity pdfActivity) {
+                getReactApplicationContext().getNativeModule(PDFDocumentModule.class).setDocument(pdfActivity.getPdfFragment().getDocument(), null, reference);
+                promise.resolve(true);
+            } else {
+                promise.reject("setupInstantDocument error", "Could not setup Instant document");
+            }
+        } catch (Exception e) {
+            promise.reject("setupInstantDocument error", "Could not setup Instant document");
+        }
+    }
+
+    @ReactMethod
     public void setLicenseKeys(@Nullable String androidLicenseKey, @Nullable String iOSLicenseKey, @Nullable Promise promise) {
         // Here, we ignore the `iOSLicenseKey` parameter and only care about `androidLicenseKey`.
         // `iOSLicenseKey` will be used to activate the license on iOS.
@@ -435,6 +452,8 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
                         super.onDocumentLoaded(document);
                         lastPresentPromise.resolve(Boolean.TRUE);
                         lastPresentPromise = null;
+                        String documentID = pdfActivity.getPdfFragment().getDocument().getDocumentIdString();
+                        NutrientNotificationCenter.INSTANCE.documentLoaded(documentID);
                     }
 
                     @Override
@@ -442,6 +461,18 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
                         super.onDocumentLoadFailed(exception);
                         lastPresentPromise.reject(exception);
                         lastPresentPromise = null;
+                        NutrientNotificationCenter.INSTANCE.documentLoadFailed();
+                    }
+
+                    @Override
+                    public boolean onPageClick(@NonNull PdfDocument pdfDocument, int pageIndex, @Nullable MotionEvent motionEvent, @Nullable PointF pointF, @Nullable Annotation annotation) {
+                        if (annotation != null) {
+                            if (NutrientNotificationCenter.INSTANCE.getIsNotificationCenterInUse()) {
+                                String documentID = pdfActivity.getPdfFragment().getDocument().getDocumentIdString();
+                                NutrientNotificationCenter.INSTANCE.didTapAnnotation(annotation, pointF, documentID);
+                            }
+                        }
+                        return false;
                     }
                 });
             }

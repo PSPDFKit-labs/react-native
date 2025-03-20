@@ -20,13 +20,21 @@ import PSPDFKit
     
     var documents = [NSNumber:Document]()
     @objc public var delegate: PDFDocumentManagerDelegate?
+    private let queue = DispatchQueue(label: "com.nutrient.reactnative.documentmanager")
+
     
     private func getDocument(_ reference: NSNumber) -> Document? {
-        return documents[reference]
+        var result: Document?
+        queue.sync {
+            result = documents[reference]
+        }
+        return result
     }
     
     @objc public func setDocument(_ document: Document, reference: NSNumber) {
-        self.documents[reference] = document
+        queue.async {
+            self.documents[reference] = document
+        }
     }
     
     @objc static public func requiresMainQueueSetup() -> Bool {
@@ -177,7 +185,7 @@ import PSPDFKit
         onSuccess(result)
     }
     
-    @objc func addAnnotations(_ reference: NSNumber, instantJSON: Any, onSuccess: @escaping RCTPromiseResolveBlock, onError: @escaping RCTPromiseRejectBlock) -> Void {
+    @objc func addAnnotations(_ reference: NSNumber, instantJSON: Any, attachments: Dictionary<String, Any>, onSuccess: @escaping RCTPromiseResolveBlock, onError: @escaping RCTPromiseRejectBlock) -> Void {
         guard let document = getDocument(reference) else {
             onError("addAnnotations", "Document is nil", nil)
             return
@@ -199,10 +207,27 @@ import PSPDFKit
             var annotationsArray = Array<Annotation>()
                         
             instantJSONArray.forEach { annotationDictionary in
-                var annotationMutableDictionary = NSMutableDictionary(dictionary: annotationDictionary)
+                let annotationMutableDictionary = NSMutableDictionary(dictionary: annotationDictionary)
                 annotationMutableDictionary.removeObject(forKey: "constructor")
                 if let annotationData = try? JSONSerialization.data(withJSONObject: annotationMutableDictionary),
                    let annotation = try? Annotation(fromInstantJSON: annotationData, documentProvider: documentProvider) {
+                                        
+                    if let attachmentId = annotationMutableDictionary["imageAttachmentId"] as? String {
+                        guard let attachment = attachments[attachmentId] as? Dictionary<String, Any>,
+                              let base64String = attachment["binary"] as? String,
+                              let base64Data = Data(base64Encoded: base64String) else {
+                            onError("addAnnotations", "Failed to process attachment data", nil)
+                            return
+                        }
+                        
+                        let dataProvider = DataContainerProvider(data: base64Data)
+                        do {
+                            try annotation.attachBinaryInstantJSONAttachment(fromDataProvider: dataProvider)
+                        } catch {
+                            onError("addAnnotations", "DocumentProvider is nil", nil)
+                            return
+                        }
+                    }
                     annotationsArray.append(annotation)
                 }
             }
@@ -212,7 +237,6 @@ import PSPDFKit
             onError("addAnnotations", "Cannot parse annotation data", nil)
             return
         }
-       
     }
     
     @objc func applyInstantJSON(_ reference: NSNumber, instantJSON: Dictionary<String, Any>, onSuccess: @escaping RCTPromiseResolveBlock, onError: @escaping RCTPromiseRejectBlock) -> Void {

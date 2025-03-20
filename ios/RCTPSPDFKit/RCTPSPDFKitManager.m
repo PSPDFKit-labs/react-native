@@ -28,6 +28,27 @@
 @import PSPDFKitUI;
 @import Instant;
 
+@interface RCTPSPDFKitDocumentDelegate : NSObject <PSPDFViewControllerDelegate>
+@property (nonatomic, weak) RCTPSPDFKitManager *manager;
+@end
+
+@implementation RCTPSPDFKitDocumentDelegate
+
+- (BOOL)pdfViewController:(PSPDFViewController *)pdfController didTapOnAnnotation:(PSPDFAnnotation *)annotation annotationPoint:(CGPoint)annotationPoint annotationView:(UIView<PSPDFAnnotationPresenting> *)annotationView pageView:(PSPDFPageView *)pageView viewPoint:(CGPoint)viewPoint {
+    [NutrientNotificationCenter.shared didTapAnnotationWithAnnotation:annotation annotationPoint:annotationPoint documentID:pdfController.document.documentIdString];
+    return NO;
+}
+
+- (void)pdfViewControllerDidDismiss:(PSPDFViewController *)pdfController {
+    [self.manager cleanupNotificationObservers];
+}
+
+@end
+
+@interface RCTPSPDFKitManager ()
+@property (nonatomic, strong) RCTPSPDFKitDocumentDelegate *documentDelegate;
+@end
+
 @implementation RCTPSPDFKitManager
 
 PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-environment";
@@ -105,6 +126,24 @@ RCT_REMAP_METHOD(getDocumentProperties, getDocumentProperties:(NSString *)docume
     }
 }
 
+RCT_REMAP_METHOD(setupInstantDocument, setupInstantDocument:(NSNumber *)reference resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+    
+    InstantDocumentViewController *instantViewController = objc_getAssociatedObject(self, associatedObjectKey);
+    
+    if (instantViewController.document != nil) {
+        if (!self.documentDelegate) {
+            self.documentDelegate = [[RCTPSPDFKitDocumentDelegate alloc] init];
+            self.documentDelegate.manager = self;
+        }
+        instantViewController.delegate = self.documentDelegate;
+        PDFDocumentManager *documentManager = [self.bridge moduleForClass:[PDFDocumentManager class]];
+        [documentManager setDocument:instantViewController.document reference:reference];
+        resolve(reference);
+    } else {
+      reject(@"error", @"Failed to setup Instant document", nil);
+    }
+}
+
 // MARK: - Annotation Processing
 
 RCT_EXPORT_METHOD(processAnnotations:(PSPDFAnnotationChange)annotationChange annotationTypes:(NSArray *)annotationTypes sourceDocument:(nonnull PSPDFDocument *)sourceDocument processedDocumentPath:(nonnull NSString *)processedDocumentPath password:(NSString *)password resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
@@ -162,6 +201,8 @@ RCT_EXPORT_METHOD(presentInstant: (NSDictionary*)documentData configuration: (NS
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationChangedNotification object:nil];
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationsAddedNotification object:nil];
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(annotationChangedNotification:) name:PSPDFAnnotationsRemovedNotification object:nil];
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(documentDidFinishRendering) name:PSPDFDocumentViewControllerDidConfigureSpreadViewNotification object:nil];
+
 
     if ([delay doubleValue] > 0) {
         instantViewController.documentDescriptor.delayForSyncingLocalChanges = [delay doubleValue];
@@ -173,6 +214,7 @@ RCT_EXPORT_METHOD(presentInstant: (NSDictionary*)documentData configuration: (NS
 
     if (presentingViewController) {
         [presentingViewController showViewController: navigationController sender:self];
+        resolve(@YES);
     } else {
         NSLog(@"Error presenting instant view controller %@", error.localizedDescription);
         NSString* errorMessage = [NSString stringWithFormat: @"Failed to present instant document. %@", error.localizedDescription];
@@ -186,6 +228,21 @@ RCT_EXPORT_METHOD(presentInstant: (NSDictionary*)documentData configuration: (NS
         [NutrientNotificationCenter.shared annotationsChangedWithNotification:notification
                                                                    documentID:instantViewController.document.documentIdString];
     }
+}
+
+- (void)documentDidFinishRendering {
+    InstantDocumentViewController *instantViewController = objc_getAssociatedObject(self, associatedObjectKey);
+    if (instantViewController.document.documentIdString != nil) {
+        [NutrientNotificationCenter.shared documentLoadedWithDocumentID:instantViewController.document.documentIdString];
+    }
+    // Remove observer after the initial notification
+    [NSNotificationCenter.defaultCenter removeObserver:self
+                                                  name:PSPDFDocumentViewControllerDidConfigureSpreadViewNotification
+                                                object:nil];
+}
+
+- (void)cleanupNotificationObservers {
+    [NSNotificationCenter.defaultCenter removeObserver:self];
 }
 
 RCT_EXPORT_METHOD(setDelayForSyncingLocalChanges: (NSNumber*)delay resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {

@@ -2090,6 +2090,35 @@ export class Processor {
   getTemporaryDirectory = function () {};
 }
 
+export class NutrientUtils {
+  static currentInstantDocument = null;
+
+   /**
+    * Get a reference to the current Instant document
+    * @method getCurrentInstantDocument
+    * @example
+    * const document = this.pdfRef.current?.getCurrentInstantDocument();
+    * @memberof NutrientUtils
+    * @returns { Promise<PDFDocument> } A reference to the current Instant document.
+    */
+    static async getCurrentInstantDocument() {
+        try {
+          // Generate a reference, using negative numbers to not interfere with existing reactTag values
+          const reference = -Math.floor(Math.random() * 1000);
+          await NativeModules.PSPDFKit.setupInstantDocument(reference);
+          let document = this.currentInstantDocument;
+          
+          if (!document) {
+            document = new PDFDocument(reference);
+            this.currentInstantDocument = document;
+          }
+          return Promise.resolve(document);
+        } catch (error) {
+          return Promise.reject(error);
+        }
+    }
+}
+
 import { PDFConfiguration } from './lib/configuration/PDFConfiguration';
 export { PDFConfiguration } from './lib/configuration/PDFConfiguration';
 
@@ -2213,6 +2242,8 @@ export {
   UnderlineMarkupAnnotation,
   WidgetAnnotation
 } from './lib/annotations/AnnotationModels';
+
+module.exports.NutrientUtils = NutrientUtils;
 
 module.exports.PDFConfiguration = PDFConfiguration;
 module.exports.RemoteDocumentConfiguration = RemoteDocumentConfiguration;

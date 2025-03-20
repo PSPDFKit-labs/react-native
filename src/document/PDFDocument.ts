@@ -24,7 +24,8 @@ import {
   StrikeOutMarkupAnnotation,
   TextAnnotation,
   UnderlineMarkupAnnotation,
-  WidgetAnnotation} from '../annotations/AnnotationModels';
+  WidgetAnnotation,
+  AnnotationAttachment} from '../annotations/AnnotationModels';
 import { Annotation } from '../annotations/Annotation';
 
 /**
@@ -336,14 +337,15 @@ export class PDFDocument {
     * @method addAnnotations
     * @memberof PDFDocument
     * @param {Array<any> | Array<AnnotationType> | Record<string, any>} annotations Array of annotations in Instant JSON format to add to the document.
-    * @description Adds all the specified annotations to the document. For complex annotations or annotations with attachments, use the ```applyInstantJSON``` API.
+    * @param {Record<string, AnnotationAttachment>} [attachments] Map of attachments related to the annotations.
+    * @description Adds all the specified annotations to the document. For complex annotations, use the ```applyInstantJSON``` API.
     * @example
     * const result = await this.pdfRef.current?.getDocument().addAnnotations(annotations);
     * @returns { Promise<boolean> } A promise containing the result of the operation. ```true``` if the annotations were added, and ```false``` if an error occurred.
     */
-    addAnnotations(annotations: Array<any> | Array<AnnotationType> | Record<string, any>): Promise<boolean> {
-      return NativeModules.PDFDocumentManager.addAnnotations(findNodeHandle(this.pdfViewRef), annotations);
-    }
+   addAnnotations(annotations: Array<any> | Array<AnnotationType> | Record<string, any>, attachments?: Record<string, AnnotationAttachment>): Promise<boolean> {
+     return NativeModules.PDFDocumentManager.addAnnotations(findNodeHandle(this.pdfViewRef), annotations, attachments);
+   }
 
    /**
     * @method applyInstantJSON

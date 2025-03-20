@@ -10,6 +10,7 @@ import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.module.annotations.ReactModule
 import com.pspdfkit.LicenseFeature
 import com.pspdfkit.PSPDFKit
@@ -266,7 +267,15 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
         }
     }
 
-    @ReactMethod fun addAnnotations(reference: Int, instantJSON: Dynamic, promise: Promise) {
+    private fun createInstantObject(annotations: ReadableArray, attachments: ReadableMap): WritableMap? {
+        val result = Arguments.createMap()
+        result.putString("format", "https://pspdfkit.com/instant-json/v1")
+        result.putArray("annotations", annotations)
+        result.putMap("attachments", attachments)
+        return result
+    }
+
+    @ReactMethod fun addAnnotations(reference: Int, instantJSON: Dynamic, attachments: Dynamic, promise: Promise) {
 
         // This API is now used to add ONLY annotation objects to a document - the old functionality to apply document JSON has moved to the more aptly named applyInstantJSON.
         // For backwards compatibility, first check whether the API is being called with a full Document JSON object, and then redirect the call to applyInstantJSON.
@@ -285,7 +294,21 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
                         try {
                             val annotation = instantJSONArray.getMap(i)
                             val hashMap = annotation!!.toHashMap() as Map<String, Any>
-                            it.annotationProvider.createAnnotationFromInstantJson(JSONObject(hashMap).toString());
+                            
+                            // Image annotations needs to be applied using importDocumentJson
+                            if (hashMap.containsKey("imageAttachmentId")) {
+                                val attachmentsJSONMap = attachments.asMap()
+                                val instantData = createInstantObject(instantJSONArray as ReadableArray, attachmentsJSONMap as ReadableMap)
+                                if (instantData != null) {
+                                    applyInstantJSON(reference, instantData, null)
+                                }
+                            } else {
+                                it.annotationProvider.createAnnotationFromInstantJson(
+                                    JSONObject(
+                                        hashMap
+                                    ).toString()
+                                );
+                            }
                         } catch (e: Exception) {
                             promise.reject("addAnnotations error", e)
                         }
@@ -300,7 +323,7 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
         }
     }
 
-    @ReactMethod fun applyInstantJSON(reference: Int, instantJSON: ReadableMap, promise: Promise) {
+    @ReactMethod fun applyInstantJSON(reference: Int, instantJSON: ReadableMap, promise: Promise?) {
         try {
             this.getDocument(reference)?.document?.let {
                 val json = JSONObject(instantJSON.toHashMap() as Map<*, *>?)
@@ -309,13 +332,13 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({
-                        promise.resolve(true)
+                        promise?.resolve(true)
                     }, { e ->
-                        promise.reject(RuntimeException(e))
+                        promise?.reject(RuntimeException(e))
                     })
             }
         } catch (e: Throwable) {
-            promise.reject("applyInstantJSON error", e)
+            promise?.reject("applyInstantJSON error", e)
         }
     }
 

@@ -417,6 +417,18 @@ export class Processor {
      */
     getTemporaryDirectory: () => Promise<any>;
 }
+export class NutrientUtils {
+    static currentInstantDocument: any;
+    /**
+     * Get a reference to the current Instant document
+     * @method getCurrentInstantDocument
+     * @example
+     * const document = this.pdfRef.current?.getCurrentInstantDocument();
+     * @memberof NutrientUtils
+     * @returns { Promise<PDFDocument> } A reference to the current Instant document.
+     */
+    static getCurrentInstantDocument(): Promise<PDFDocument>;
+}
 export type Props = {
     /**
      * The path to the PDF file that should be displayed.

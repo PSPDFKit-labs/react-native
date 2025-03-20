@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, EmitterSubscription, Linking, NativeEventEmitter, NativeModules, Switch, Text, TextInput, View } from 'react-native';
+import { Alert, Linking, Switch, Text, TextInput, View } from 'react-native';
 
 import PrimaryButton from '../components/primaryButton';
 import UrlInput from '../components/urlInput';
@@ -8,10 +8,11 @@ import { loadDocument } from '../helpers/api/ApiClient';
 import { BaseExampleAutoHidingHeaderComponent } from '../helpers/BaseExampleAutoHidingHeaderComponent';
 import { PSPDFKit } from '../helpers/PSPDFKit';
 import defaultStyles from '../styles/styles';
-import { NotificationCenter } from 'react-native-pspdfkit';
+import { InkAnnotation, NotificationCenter, NutrientUtils } from 'react-native-pspdfkit';
 
 export default class InstantSynchronization extends BaseExampleAutoHidingHeaderComponent {
-  subscriptions = Array<EmitterSubscription>();
+  notificationCenter = new NotificationCenter(0);
+
 
   constructor(props: any) {
     super(props);
@@ -25,38 +26,25 @@ export default class InstantSynchronization extends BaseExampleAutoHidingHeaderC
   }
 
   override componentDidMount() {
+    
+    this.notificationCenter.subscribe(NotificationCenter.DocumentEvent.LOADED, async (event: any) => {
+      console.log('PSPDFKit', JSON.stringify(event));
+      
+      const document = await NutrientUtils.getCurrentInstantDocument();
+      console.log('Document ID: ', await document?.getDocumentId());
+    });
 
-    // Added
-    const addedSubscription = new NativeEventEmitter(NativeModules.PSPDFKit).addListener(NotificationCenter.AnnotationsEvent.ADDED, (event: any) => {
+    this.notificationCenter.subscribe(NotificationCenter.AnnotationsEvent.ADDED, async (event: any) => {
       console.log('PSPDFKit', JSON.stringify(event));
     });
-    this.subscriptions.push(addedSubscription);
 
-    // // Removed
-    // const removedSubscription = new NativeEventEmitter(NativeModules.PSPDFKit).addListener(NotificationCenter.AnnotationsEvent.REMOVED, (event: any) => {
-    //   console.log('PSPDFKit', JSON.stringify(event));
-    // });
-    // this.subscriptions.push(removedSubscription);
-
-    // // Changed
-    // const changedSubscription = new NativeEventEmitter(NativeModules.PSPDFKit).addListener(NotificationCenter.AnnotationsEvent.CHANGED, (event: any) => {
-    //   console.log('PSPDFKit', JSON.stringify(event));
-    // });
-    // this.subscriptions.push(changedSubscription);
-
-    // @ts-ignore
-    NativeModules.PSPDFKit.handleListenerAdded(NotificationCenter.AnnotationsEvent.ADDED);
-    // // @ts-ignore
-    // NativeModules.PSPDFKit.handleListenerAdded(NotificationCenter.AnnotationsEvent.REMOVED);
-    // // @ts-ignore
-    // NativeModules.PSPDFKit.handleListenerAdded(NotificationCenter.AnnotationsEvent.CHANGED);
+    this.notificationCenter.subscribe(NotificationCenter.AnnotationsEvent.TAPPED, async (event: any) => {
+      console.log('PSPDFKit', JSON.stringify(event));
+    });
   }
 
   override componentWillUnmount() {
-    this.subscriptions.forEach((subscription: EmitterSubscription) => {
-      subscription.remove();
-    });
-    this.subscriptions = [];
+    this.notificationCenter.unsubscribeAllEvents();
   }
 
   updateSyncDelay = async (delayValue: string) => {
@@ -101,9 +89,9 @@ export default class InstantSynchronization extends BaseExampleAutoHidingHeaderC
       this.onCloseModal();
       const response = await loadDocument(url);
       const documentData = {
-        serverUrl: response.serverUrl,
-        jwt: response.jwt,
-      };
+          serverUrl: response.serverUrl,
+          jwt: response.jwt,
+        };
       PSPDFKit.presentInstant(documentData, {
         enableInstantComments: this.state.areCommentsEnabled,
         listenToServerChanges: this.state.shouldListenForChanges,
