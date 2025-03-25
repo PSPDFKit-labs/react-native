@@ -59,7 +59,7 @@ public class PdfViewDataReturnedEvent extends Event<PdfViewDataReturnedEvent> {
             Map<String, Object> annotations = new HashMap<>();
             annotations.put("annotations", annotationsSerialized);
             map.put("result", annotations);
-        } catch (JSONException e) {
+        } catch (Exception e) {
             map.put("error", e.getMessage());
         }
 
@@ -94,7 +94,7 @@ public class PdfViewDataReturnedEvent extends Event<PdfViewDataReturnedEvent> {
 
         try {
             map.put("result", JsonUtilities.jsonObjectToMap(jsonObject));
-        } catch (JSONException e) {
+        } catch (Exception e) {
             map.put("error", e.getMessage());
         }
 
