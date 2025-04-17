@@ -78,6 +78,7 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
     public static final int COMMAND_GET_ANNOTATION_FLAGS = 26;
     public static final int COMMAND_ADD_ELECTRONIC_SIGNATURE = 27;
     public static final int COMMAND_ADD_FORM_FIELD = 28;
+    public static final int COMMAND_SET_PAGE_INDEX = 29;
 
     private final CompositeDisposable annotationDisposables = new CompositeDisposable();
 
@@ -142,6 +143,7 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
         commandMap.put("getAnnotationFlags", COMMAND_GET_ANNOTATION_FLAGS);
         commandMap.put("addElectronicSignatureField", COMMAND_ADD_ELECTRONIC_SIGNATURE);
         commandMap.put("addFormField", COMMAND_ADD_FORM_FIELD);
+        commandMap.put("setPageIndex", COMMAND_SET_PAGE_INDEX);
         return commandMap;
     }
 
@@ -496,6 +498,15 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
                         root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, result));
                     } catch (Exception e) {
                         root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, e));
+                    }
+                }
+                break;
+                case COMMAND_SET_PAGE_INDEX:
+                if (args != null && args.size() == 1) {
+                    try {
+                        root.setPageIndex(args.getInt(0));
+                    } catch (Exception ignored) {
+
                     }
                 }
                 break;

@@ -1,6 +1,8 @@
 import {
   findNodeHandle,
   NativeModules,
+  UIManager,
+  Platform
   // @ts-ignore
 } from 'react-native';
 
@@ -163,4 +165,36 @@ export class PDFDocument {
     exportXFDF(filePath: string): Promise<any> {
       return NativeModules.PDFDocumentManager.exportXFDF(findNodeHandle(this.pdfViewRef), filePath);
     }
+
+  /**
+    * @method setPageIndex
+    * @memberof PDFDocument
+    * @param {number} pageIndex Zero-based page index of the page index to set the document to.
+    * @description Used to set the current page of the document. Starts at 0.
+    * @example
+    * await this.pdfRef.current?.getDocument().setPageIndex(5);
+    * @returns { Promise<void> } A promise returning when done.
+    */
+  async setPageIndex(pageIndex: number): Promise<void> {
+    if (Platform.OS === 'android') {
+        UIManager.dispatchViewManagerCommand(findNodeHandle(this.pdfViewRef),
+        UIManager.getViewManagerConfig('RCTPSPDFKitView').Commands.setPageIndex,
+        [pageIndex],
+    );
+    return Promise.resolve();
+    } else if (Platform.OS === 'ios') {
+      if (NativeModules.RCTPSPDFKitViewManager != null) {
+        NativeModules.RCTPSPDFKitViewManager.setPageIndex(
+            pageIndex,
+            findNodeHandle(this.pdfViewRef),
+        );
+      } else {
+        NativeModules.PSPDFKitViewManager.setPageIndex(
+          pageIndex,
+          findNodeHandle(this.pdfViewRef),
+      );
+      }
+        return Promise.resolve();
+    }
+}
 }

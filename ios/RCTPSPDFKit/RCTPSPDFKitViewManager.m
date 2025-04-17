@@ -260,6 +260,14 @@ RCT_EXPORT_METHOD(addFormField:(NSDictionary *)jsonFormData reactTag:(nonnull NS
   });
 }
 
+RCT_EXPORT_METHOD(setPageIndex:(NSInteger)pageIndex reactTag:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    RCTPSPDFKitView *component = (RCTPSPDFKitView *)[self.bridge.uiManager viewForReactTag:reactTag];
+    [component updatePageIndex:pageIndex];
+    resolve(@YES);
+  });
+}
+
 RCT_EXPORT_METHOD(enterAnnotationCreationMode:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   dispatch_async(dispatch_get_main_queue(), ^{
     RCTPSPDFKitView *component = (RCTPSPDFKitView *)[self.bridge.uiManager viewForReactTag:reactTag];

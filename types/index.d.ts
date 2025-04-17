@@ -764,7 +764,7 @@ export type GeneratePDFResult = {
  *    />
  */
 declare class PSPDFKitView extends React.Component<Props, any, any> {
-    constructor(props: Props | Readonly<Props>);
+    constructor(props: Props);
     constructor(props: Props, context: any);
     /**
      * @ignore
@@ -864,7 +864,7 @@ declare class PSPDFKitView extends React.Component<Props, any, any> {
      * @memberof PSPDFKitView
      * @returns { PDFDocument } A reference to the document that is currently loaded in the PSPDFKitView component.
      */
-    getDocument: () => PDFDocument;
+    getDocument(): PDFDocument;
     /**
      * Gets all annotations of the given type from the specified page.
      *

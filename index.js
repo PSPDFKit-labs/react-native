@@ -275,9 +275,14 @@ class PSPDFKitView extends React.Component {
    * @memberof PSPDFKitView
    * @returns { PDFDocument } A reference to the document that is currently loaded in the PSPDFKitView component.
    */
-    getDocument = function () {
-      return this._pdfDocument == null ? new PDFDocument(this._componentRef.current) : this._pdfDocument;
-    };
+  getDocument () {
+    if (this._pdfDocument == null) {
+      this._pdfDocument = new PDFDocument(this._componentRef.current);
+      return this._pdfDocument;
+    } else {
+      return this._pdfDocument;
+    }
+  };
 
   /**
    * Gets all annotations of the given type from the specified page.
