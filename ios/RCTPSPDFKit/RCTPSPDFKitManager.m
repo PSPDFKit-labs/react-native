@@ -34,6 +34,11 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
 
 RCT_EXPORT_MODULE(PSPDFKit)
 
+- (void)setBridge:(RCTBridge *)bridge {
+    [super setBridge:bridge];
+    [NutrientNotificationCenter.shared setEventEmitter:self];
+}
+
 RCT_REMAP_METHOD(setLicenseKey, setLicenseKey:(nullable NSString *)licenseKey resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   if (![licenseKey isEqual:[NSNull null]]) {
     [PSPDFKitGlobal setLicenseKey:licenseKey options:@{PSPDFSettingKeyHybridEnvironment: @"ReactNative"}];
@@ -212,7 +217,6 @@ RCT_EXPORT_METHOD(handleListenerRemoved:(nonnull NSString* )event isLast:(BOOL)i
 }
 
 - (NSArray<NSString*> *)supportedEvents {
-    [NutrientNotificationCenter.shared setEventEmitter:self];
     return @[@"documentLoaded",
              @"documentLoadFailed",
              @"documentPageChanged",
