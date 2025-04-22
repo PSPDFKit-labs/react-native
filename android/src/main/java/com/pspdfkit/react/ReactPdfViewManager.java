@@ -25,6 +25,7 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.UIManagerHelper;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
@@ -97,13 +98,14 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
     @NonNull
     @Override
     protected PdfView createViewInstance(ThemedReactContext reactContext) {
+        this.reactApplicationContext = reactContext.getReactApplicationContext();
         Activity currentActivity = reactContext.getCurrentActivity();
         if (currentActivity instanceof FragmentActivity) {
             // Since we require a FragmentManager this only works in FragmentActivities.
             FragmentActivity fragmentActivity = (FragmentActivity) reactContext.getCurrentActivity();
             PdfView pdfView = new PdfView(reactContext);
             pdfView.inject(fragmentActivity.getSupportFragmentManager(),
-                    reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher());
+                    UIManagerHelper.getEventDispatcher(reactContext, pdfView.getId()));
             return pdfView;
         } else {
             throw new IllegalStateException("ReactPSPDFKitView can only be used in FragmentActivity subclasses.");
