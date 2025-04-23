@@ -242,7 +242,7 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
     @ReactMethod
     public void setLicenseKey(@Nullable String licenseKey, @Nullable Promise promise) {
          try {
-            PSPDFKit.initialize(getCurrentActivity(), licenseKey, new ArrayList<>(), HYBRID_TECHNOLOGY);
+            PSPDFKit.initialize(getReactApplicationContext(), licenseKey, new ArrayList<>(), HYBRID_TECHNOLOGY);
             promise.resolve("Initialised PSPDFKit");
         } catch (InvalidNutrientLicenseException e) {
             promise.reject(e);
@@ -286,7 +286,7 @@ public class PSPDFKitModule extends ReactContextBaseJavaModule implements Applic
         // Here, we ignore the `iOSLicenseKey` parameter and only care about `androidLicenseKey`.
         // `iOSLicenseKey` will be used to activate the license on iOS.
         try {
-            PSPDFKit.initialize(getCurrentActivity(), androidLicenseKey, new ArrayList<>(), HYBRID_TECHNOLOGY);
+            PSPDFKit.initialize(getReactApplicationContext(), androidLicenseKey, new ArrayList<>(), HYBRID_TECHNOLOGY);
             promise.resolve("Initialised PSPDFKit");
         } catch (InvalidNutrientLicenseException e) {
             promise.reject(e);
