@@ -32,6 +32,7 @@ import { Annotation } from '../annotations/Annotation';
 import { FormField } from '../forms/FormField';
 import { FormElement } from '../forms/FormElement';
 import { Forms } from '../forms/Forms';
+import { PDFPageInfo } from './PDFPageInfo';
 
 /**
  * @class PDFDocument
@@ -413,6 +414,19 @@ export class PDFDocument {
     */
     exportXFDF(filePath: string): Promise<any> {
       return NativeModules.PDFDocumentManager.exportXFDF(findNodeHandle(this.pdfViewRef), filePath);
+    }
+
+   /**
+    * @method getPageInfoForPageAtIndex
+    * @memberof PDFDocument
+    * @param {number} pageIndex Page index of the page info to get.
+    * @description Returns cached rotation and aspect ratio data for specific page.
+    * @example
+    * const pageInfo = await this.pdfRef.current?.getDocument().getPageInfoForPageAtIndex(0);
+    * @returns { Promise<PDFPageInfo> } A promise containing the page info.
+    */
+    getPageInfoForPageAtIndex(pageIndex: number): Promise<PDFPageInfo> {
+      return NativeModules.PDFDocumentManager.getPageInfoForPageAtIndex(findNodeHandle(this.pdfViewRef), pageIndex);
     }
 
    /**

@@ -2157,6 +2157,9 @@ export {
 import { PDFDocument } from './lib/document/PDFDocument';
 export { PDFDocument } from './lib/document/PDFDocument';
 
+import { PDFPageInfo } from './lib/document/PDFPageInfo';
+export { PDFPageInfo } from './lib/document/PDFPageInfo';
+
 import { NotificationCenter } from './lib/notification-center/NotificationCenter';
 export { NotificationCenter } from './lib/notification-center/NotificationCenter';
 
@@ -2223,6 +2226,9 @@ export { FormElement, ButtonFormElement, ChoiceFormElement, SignatureFormElement
 
 import { Forms } from './lib/forms/Forms';
 export { Forms } from './lib/forms/Forms';
+
+module.exports.PDFDocument = PDFDocument;
+module.exports.PDFPageInfo = PDFPageInfo;
 
 module.exports.PDFConfiguration = PDFConfiguration;
 module.exports.RemoteDocumentConfiguration = RemoteDocumentConfiguration;

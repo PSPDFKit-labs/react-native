@@ -96,3 +96,7 @@ export import TextFieldFormElement = formElement.TextFieldFormElement;
 //@ts-ignore
 import forms = require('../src/forms/Forms');
 export import Forms = forms.Forms;
+
+//@ts-ignore
+import pageInfo = require('../src/document/PDFPageInfo');
+export import PDFPageInfo = pageInfo.PDFPageInfo;

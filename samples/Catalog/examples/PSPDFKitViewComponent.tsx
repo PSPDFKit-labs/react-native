@@ -51,12 +51,12 @@ export class PSPDFKitViewComponent extends BaseExampleAutoHidingHeaderComponent 
                   <Text style={styles.button}>{'Get Document ID'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={ async () => {
-                  const documentProperties = await PSPDFKit.getDocumentProperties(exampleDocumentPath);
+                  const document = this.pdfRef.current?.getDocument();
+                  const pageInfo = await document?.getPageInfoForPageAtIndex(0);
                   Alert.alert('PSPDFKit', 
-                    'Document Properties: ' + JSON.stringify(documentProperties));
-                    console.log('Document Properties: ', documentProperties);
+                    'Page Info: ' + JSON.stringify(pageInfo));
                 }}>
-                  <Text style={styles.button}>{'Get Document Props'}</Text>
+                  <Text style={styles.button}>{'Get Page Info'}</Text>
                 </TouchableOpacity>
               </View>
             </View>

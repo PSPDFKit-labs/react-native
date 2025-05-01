@@ -790,6 +790,7 @@ export type GeneratePDFResult = {
  */
 declare class PSPDFKitView extends React.Component<Props, any, any> {
     constructor(props: Props);
+    constructor(props: Props, context: any);
     /**
      * @ignore
      */
@@ -1440,3 +1441,7 @@ export import TextFieldFormElement = formElement.TextFieldFormElement;
 //@ts-ignore
 import forms = require('../src/forms/Forms');
 export import Forms = forms.Forms;
+
+//@ts-ignore
+import pageInfo = require('../src/document/PDFPageInfo');
+export import PDFPageInfo = pageInfo.PDFPageInfo;
