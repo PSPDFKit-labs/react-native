@@ -30,6 +30,7 @@
 @property (nonatomic, nullable) UIViewController *topController;
 @property (nonatomic, strong) SessionStorage *sessionStorage;
 @property (nonatomic) BOOL isPropsSet;
+@property (nonatomic, strong) UITapGestureRecognizer *tapGestureRecognizer;
 
 @end
 
@@ -58,10 +59,9 @@
       
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(documentDidFinishRendering) name:PSPDFDocumentViewControllerDidConfigureSpreadViewNotification object:nil];
       
-    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] init];
-    [tapGestureRecognizer addTarget:self action:@selector(tapGestureRecognizerDidChangeState:)];
-    [_pdfController.interactions.allInteractions allowSimultaneousRecognitionWithGestureRecognizer:tapGestureRecognizer];
-    [_pdfController.view addGestureRecognizer:tapGestureRecognizer];
+    _tapGestureRecognizer = [[UITapGestureRecognizer alloc] init];
+    [_tapGestureRecognizer addTarget:self action:@selector(tapGestureRecognizerDidChangeState:)];
+    [_pdfController.interactions.allInteractions allowSimultaneousRecognitionWithGestureRecognizer:_tapGestureRecognizer];
   }
   
   return self;
@@ -247,6 +247,7 @@
 }
 
 - (void)pdfViewController:(PSPDFViewController *)pdfController willBeginDisplayingPageView:(PSPDFPageView *)pageView forPageAtIndex:(NSInteger)pageIndex {
+  [pageView addGestureRecognizer:_tapGestureRecognizer];
   [self onStateChangedForPDFViewController:pdfController pageView:pageView pageAtIndex:pageIndex];
 }
 
