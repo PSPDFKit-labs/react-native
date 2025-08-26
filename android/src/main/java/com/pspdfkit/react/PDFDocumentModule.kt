@@ -452,64 +452,60 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
         try {
             this.getDocument(reference)?.document?.let {
 
-                it.formProvider.getFormElementWithNameAsync(fullyQualifiedName)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        { formElement ->
-                            var success = false
-                            
-                            when (formElement) {
-                                is EditableButtonFormElement -> {
-                                    if (value.type == ReadableType.Boolean) {
-                                        if (value.asBoolean()) {
-                                            formElement.select()
-                                        } else {
-                                            formElement.deselect()
-                                        }
-                                        success = true
-                                    }
-                                }
-                                is ChoiceFormElement -> {
-                                    if (value.type == ReadableType.Array) {
-                                        val indices = value.asArray()?.toArrayList()
-                                            ?.filterIsInstance<Int>()
-                                        if (indices != null) {
-                                            formElement.selectedIndexes = indices
-                                        }
-                                        success = true
-                                    } else if (value.type == ReadableType.String) {
-                                        try {
-                                            val index = value.asString()?.toInt()
-                                            formElement.selectedIndexes = listOf(index)
-                                            success = true
-                                        } catch (e: NumberFormatException) {
-                                            // Handle custom text for combo box
-                                            if (formElement is ComboBoxFormElement) {
-                                                formElement.customText = value.asString()
-                                                success = true
-                                            }
-                                        }
-                                    }
-                                }
-                                is TextFormElement -> {
-                                    if (value.type == ReadableType.String) {
-                                        value.asString()?.let { it1 -> formElement.setText(it1) }
-                                        success = true
-                                    }
-                                }
-                            }
+                var formElement = it.formProvider.getFormFieldWithFullyQualifiedName(fullyQualifiedName)?.formElement
+                if (formElement == null) {
+                    formElement = it.formProvider.getFormElementWithName(fullyQualifiedName)
+                }
+                var success = false
 
-                            if (success) {
-                                promise.resolve(true)
+                when (formElement) {
+                    is EditableButtonFormElement -> {
+                        if (value.type == ReadableType.Boolean) {
+                            if (value.asBoolean()) {
+                                formElement.select()
                             } else {
-                                promise.reject("updateFormFieldValue", "Could not update form field value")
+                                formElement.deselect()
                             }
-                        },
-                        { e ->
-                            promise.reject("updateFormFieldValue", e)
+                            success = true
                         }
-                    )
+                    }
+
+                    is ChoiceFormElement -> {
+                        if (value.type == ReadableType.Array) {
+                            val indices = value.asArray()?.toArrayList()
+                                ?.filterIsInstance<Int>()
+                            if (indices != null) {
+                                formElement.selectedIndexes = indices
+                            }
+                            success = true
+                        } else if (value.type == ReadableType.String) {
+                            try {
+                                val index = value.asString()?.toInt()
+                                formElement.selectedIndexes = listOf(index)
+                                success = true
+                            } catch (e: NumberFormatException) {
+                                // Handle custom text for combo box
+                                if (formElement is ComboBoxFormElement) {
+                                    formElement.customText = value.asString()
+                                    success = true
+                                }
+                            }
+                        }
+                    }
+
+                    is TextFormElement -> {
+                        if (value.type == ReadableType.String) {
+                            value.asString()?.let { it1 -> formElement.setText(it1) }
+                            success = true
+                        }
+                    }
+                }
+
+                if (success) {
+                    promise.resolve(true)
+                } else {
+                    promise.reject("updateFormFieldValue", "Could not update form field value")
+                }
             }
         } catch (e: Throwable) {
             promise.reject("updateFormFieldValue", e)
