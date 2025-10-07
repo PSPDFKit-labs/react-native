@@ -67,7 +67,9 @@ import PSPDFKit
             return
         }
         
-        let pageInfoDictionary = ["savedRotation" : pageInfo.savedRotation.rawValue]
+        let sizeDictionary = ["width" : pageInfo.size.width, "height" : pageInfo.size.height]
+        let pageInfoDictionary = ["savedRotation" : pageInfo.savedRotation.rawValue,
+                                  "size" : sizeDictionary] as [String : Any]
         onSuccess(pageInfoDictionary);
     }
 
