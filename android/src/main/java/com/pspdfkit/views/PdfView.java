@@ -13,7 +13,6 @@
 
 package com.pspdfkit.views;
 
-import static com.pspdfkit.annotations.AnnotationProvider.ALL_ANNOTATION_TYPES;
 import static com.pspdfkit.configuration.signatures.SignatureSavingStrategy.*;
 import static com.pspdfkit.react.helper.ConversionHelpers.getAnnotationTypes;
 
@@ -956,7 +955,7 @@ public class PdfView extends FrameLayout {
 
         ArrayList<Annotation> annotationsToSelect = new ArrayList<>();
 
-        return fragment.getDocument().getAnnotationProvider().getAllAnnotationsOfTypeAsync(ALL_ANNOTATION_TYPES)
+        return fragment.getDocument().getAnnotationProvider().getAllAnnotationsOfTypeAsync(EnumSet.allOf(AnnotationType.class))
                 .toList()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -1105,7 +1104,7 @@ public class PdfView extends FrameLayout {
         AtomicBoolean found = new AtomicBoolean(false);
         return getCurrentPdfFragment().map(PdfFragment::getDocument).subscribeOn(Schedulers.io())
                 .flatMapCompletable(currentDocument -> Completable.fromAction(() -> {
-                    List<Annotation> allAnnotations = currentDocument.getAnnotationProvider().getAllAnnotationsOfType(ALL_ANNOTATION_TYPES);
+                    List<Annotation> allAnnotations = currentDocument.getAnnotationProvider().getAllAnnotationsOfType(EnumSet.allOf(AnnotationType.class));
                     for (int i = 0; i < allAnnotations.size(); i++) {
                         Annotation annotation = allAnnotations.get(i);
                         if (annotation.getUuid().equals(uuid) || 
@@ -1128,7 +1127,7 @@ public class PdfView extends FrameLayout {
     public Disposable getAnnotationFlags(final int requestId, @NonNull String uuid) {
         return getCurrentPdfFragment().map(PdfFragment::getDocument).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(currentDocument -> {
-                    List<Annotation> allAnnotations = currentDocument.getAnnotationProvider().getAllAnnotationsOfType(ALL_ANNOTATION_TYPES);
+                    List<Annotation> allAnnotations = currentDocument.getAnnotationProvider().getAllAnnotationsOfType(EnumSet.allOf(AnnotationType.class));
                     ArrayList<String> convertedFlags = new ArrayList<>();
                     for (int i = 0; i < allAnnotations.size(); i++) {
                         Annotation annotation = allAnnotations.get(i);
@@ -1279,7 +1278,7 @@ public class PdfView extends FrameLayout {
             final OutputStream outputStream =  getContext().getContentResolver().openOutputStream(Uri.parse(filePath));
             if (outputStream == null) return null;
 
-            List<Annotation> annotations = fragment.getDocument().getAnnotationProvider().getAllAnnotationsOfType(ALL_ANNOTATION_TYPES);
+            List<Annotation> annotations = fragment.getDocument().getAnnotationProvider().getAllAnnotationsOfType(EnumSet.allOf(AnnotationType.class));
 
             List<FormField> formFields  = Collections.emptyList();
             if (PSPDFKit.getLicenseFeatures().contains(LicenseFeature.FORMS)) {

@@ -15,7 +15,6 @@ import com.facebook.react.module.annotations.ReactModule
 import com.pspdfkit.LicenseFeature
 import com.pspdfkit.PSPDFKit
 import com.pspdfkit.annotations.Annotation
-import com.pspdfkit.annotations.AnnotationProvider.ALL_ANNOTATION_TYPES
 import com.pspdfkit.annotations.AnnotationType
 import com.pspdfkit.document.ImageDocument
 import com.pspdfkit.document.PdfDocument
@@ -185,7 +184,9 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
     @ReactMethod fun getAnnotations(reference: Int, type: String?, promise: Promise) {
         try {
             this.getDocument(reference)?.document?.let {
-                it.annotationProvider.getAllAnnotationsOfTypeAsync(if (type == null) ALL_ANNOTATION_TYPES else getAnnotationTypes(Arguments.makeNativeArray<String>(arrayOf(type))))
+                it.annotationProvider.getAllAnnotationsOfTypeAsync(if (type == null) (EnumSet.allOf(
+                    AnnotationType::class.java
+                )) else getAnnotationTypes(Arguments.makeNativeArray<String>(arrayOf(type))))
                         .toList()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -253,7 +254,10 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
 
                 val instantJSONArray: List<Map<String, Any>> = instantJSON.toArrayList().filterIsInstance<Map<String, Any>>()
                 var annotationsToDelete: ArrayList<Annotation> = ArrayList()
-                it.annotationProvider.getAllAnnotationsOfTypeAsync(ALL_ANNOTATION_TYPES)
+                it.annotationProvider.getAllAnnotationsOfTypeAsync(
+                    EnumSet.allOf(
+                        AnnotationType::class.java
+                    ))
                         .toList()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -411,7 +415,10 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
                     return
                 }
 
-                val allAnnotations = it.annotationProvider.getAllAnnotationsOfType(ALL_ANNOTATION_TYPES)
+                val allAnnotations = it.annotationProvider.getAllAnnotationsOfType(
+                    EnumSet.allOf(
+                        AnnotationType::class.java
+                    ))
                 var allFormFields: List<com.pspdfkit.forms.FormField> = emptyList()
                 if (PSPDFKit.getLicenseFeatures().contains(LicenseFeature.FORMS)) {
                     allFormFields = it.formProvider.formFields
