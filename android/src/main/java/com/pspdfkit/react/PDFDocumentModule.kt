@@ -28,8 +28,8 @@ import com.pspdfkit.forms.ComboBoxFormElement
 import com.pspdfkit.forms.EditableButtonFormElement
 import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
-import com.pspdfkit.forms.configuration.SignatureFormConfiguration
-import com.pspdfkit.forms.configuration.TextFormConfiguration
+import com.pspdfkit.forms.SignatureFormConfiguration
+import com.pspdfkit.forms.TextFormConfiguration
 import android.graphics.RectF
 import com.pspdfkit.react.helper.AnnotationUtils
 import com.pspdfkit.react.helper.BookmarkUtils
@@ -54,7 +54,7 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
     override fun getName(): String {
         return NAME
     }
-    
+
     private fun getDocument(reference: Int): DocumentData? {
         return this.documents[reference]
     }
@@ -210,18 +210,18 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
             this.getDocument(reference)?.document?.let {
                 val outputStream = ByteArrayOutputStream()
                 DocumentJsonFormatter.exportDocumentJsonAsync(it, outputStream)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                {
-                                    val json = JSONObject(outputStream.toString())
-                                    val jsonMap = JsonUtilities.jsonObjectToMap(json)
-                                    val nativeMap = Arguments.makeNativeMap(jsonMap)
-                                    promise.resolve(nativeMap)
-                                }, { e ->
-                                    promise.reject(RuntimeException(e))
-                                }
-                        )
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        {
+                            val json = JSONObject(outputStream.toString())
+                            val jsonMap = JsonUtilities.jsonObjectToMap(json)
+                            val nativeMap = Arguments.makeNativeMap(jsonMap)
+                            promise.resolve(nativeMap)
+                        }, { e ->
+                            promise.reject(RuntimeException(e))
+                        }
+                    )
             }
         } catch (e: Throwable) {
             promise.reject("getAllUnsavedAnnotations error", e)
@@ -232,25 +232,25 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
         try {
             this.getDocument(reference)?.document?.let {
                 it.annotationProvider.getAllAnnotationsOfTypeAsync(if (type == null) ALL_ANNOTATION_TYPES else getAnnotationTypes(Arguments.makeNativeArray<String>(arrayOf(type))))
-                        .toList()
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                { annotations ->
-                                    var annotationsSerialized: ArrayList<Map<String, Any>> = ArrayList()
-                                    for (annotation in annotations) {
-                                        if (annotation.type == AnnotationType.POPUP) {
-                                            continue
-                                        }
-                                        val annotationMap = AnnotationUtils.processAnnotation(annotation)
-                                        annotationsSerialized.add(annotationMap)
-                                    }
-                                    val nativeList = Arguments.makeNativeArray(annotationsSerialized)
-                                    promise.resolve(nativeList)
-                                }, { e ->
-                                    promise.reject(RuntimeException(e))
+                    .toList()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { annotations ->
+                            var annotationsSerialized: ArrayList<Map<String, Any>> = ArrayList()
+                            for (annotation in annotations) {
+                                if (annotation.type == AnnotationType.POPUP) {
+                                    continue
                                 }
-                        )
+                                val annotationMap = AnnotationUtils.processAnnotation(annotation)
+                                annotationsSerialized.add(annotationMap)
+                            }
+                            val nativeList = Arguments.makeNativeArray(annotationsSerialized)
+                            promise.resolve(nativeList)
+                        }, { e ->
+                            promise.reject(RuntimeException(e))
+                        }
+                    )
             }
         } catch (e: Throwable) {
             promise.reject("getAnnotations error", e)
@@ -268,25 +268,25 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
 
                 it.annotationProvider.getAllAnnotationsOfTypeAsync(if (type == null) EnumSet.allOf(AnnotationType::class.java) else
                     getAnnotationTypes(Arguments.makeNativeArray<String>(arrayOf(type))), pageIndex, 1)
-                        .toList()
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                { annotations ->
-                                    var annotationsSerialized: ArrayList<Map<String, Any>> = ArrayList()
-                                    for (annotation in annotations) {
-                                        if (annotation.type == AnnotationType.POPUP) {
-                                            continue
-                                        }
-                                        val annotationMap = AnnotationUtils.processAnnotation(annotation)
-                                        annotationsSerialized.add(annotationMap)
-                                    }
-                                    val nativeList = Arguments.makeNativeArray(annotationsSerialized)
-                                    promise.resolve(nativeList)
-                                }, { e ->
-                                    promise.reject(RuntimeException(e))
+                    .toList()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { annotations ->
+                            var annotationsSerialized: ArrayList<Map<String, Any>> = ArrayList()
+                            for (annotation in annotations) {
+                                if (annotation.type == AnnotationType.POPUP) {
+                                    continue
                                 }
-                        )
+                                val annotationMap = AnnotationUtils.processAnnotation(annotation)
+                                annotationsSerialized.add(annotationMap)
+                            }
+                            val nativeList = Arguments.makeNativeArray(annotationsSerialized)
+                            promise.resolve(nativeList)
+                        }, { e ->
+                            promise.reject(RuntimeException(e))
+                        }
+                    )
             }
         } catch (e: Throwable) {
             promise.reject("getAnnotationsForPage error", e)
@@ -300,28 +300,28 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
                 val instantJSONArray: List<Map<String, Any>> = instantJSON.toArrayList().filterIsInstance<Map<String, Any>>()
                 var annotationsToDelete: ArrayList<Annotation> = ArrayList()
                 it.annotationProvider.getAllAnnotationsOfTypeAsync(ALL_ANNOTATION_TYPES)
-                        .toList()
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                { annotations ->
-                                    for (annotation in annotations) {
-                                        for (instantJSONAnnotation in instantJSONArray) {
-                                            if (annotation.name == instantJSONAnnotation["name"] ||
-                                                    annotation.uuid == instantJSONAnnotation["uuid"]) {
-                                                annotationsToDelete.add(annotation)
-                                            }
-                                        }
+                    .toList()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { annotations ->
+                            for (annotation in annotations) {
+                                for (instantJSONAnnotation in instantJSONArray) {
+                                    if (annotation.name == instantJSONAnnotation["name"] ||
+                                        annotation.uuid == instantJSONAnnotation["uuid"]) {
+                                        annotationsToDelete.add(annotation)
                                     }
-
-                                    for (annotation in annotationsToDelete) {
-                                        it.annotationProvider.removeAnnotationFromPage(annotation)
-                                    }
-                                    promise.resolve(true)
-                                }, { e ->
-                                    promise.reject(RuntimeException(e))
                                 }
-                        )
+                            }
+
+                            for (annotation in annotationsToDelete) {
+                                it.annotationProvider.removeAnnotationFromPage(annotation)
+                            }
+                            promise.resolve(true)
+                        }, { e ->
+                            promise.reject(RuntimeException(e))
+                        }
+                    )
             }
         } catch (e: Throwable) {
             promise.reject("removeAnnotations error", e)
@@ -422,21 +422,21 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
                 }
 
                 XfdfFormatter.parseXfdfAsync(it, ContentResolverDataProvider((Uri.parse(importPath))))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                { annotations ->
-                                    for (annotation in annotations) {
-                                        it.annotationProvider.addAnnotationToPage(annotation)
-                                    }
-                                    val result = JSONObject()
-                                    result.put("success", true)
-                                    val jsonMap = JsonUtilities.jsonObjectToMap(result)
-                                    val nativeMap = Arguments.makeNativeMap(jsonMap)
-                                    promise.resolve(nativeMap)
-                                }, { e ->
-                                    promise.reject("importXFDF error", e)
-                                })
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { annotations ->
+                            for (annotation in annotations) {
+                                it.annotationProvider.addAnnotationToPage(annotation)
+                            }
+                            val result = JSONObject()
+                            result.put("success", true)
+                            val jsonMap = JsonUtilities.jsonObjectToMap(result)
+                            val nativeMap = Arguments.makeNativeMap(jsonMap)
+                            promise.resolve(nativeMap)
+                        }, { e ->
+                            promise.reject("importXFDF error", e)
+                        })
             }
         } catch (e: Throwable) {
             promise.reject("importXFDF error", e)
@@ -464,17 +464,17 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
                 }
 
                 XfdfFormatter.writeXfdfAsync(it, allAnnotations, allFormFields, outputStream)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                {
-                                    val result = JSONObject()
-                                    result.put("success", true)
-                                    result.put("filePath", filePath)
-                                    val jsonMap = JsonUtilities.jsonObjectToMap(result)
-                                    val nativeMap = Arguments.makeNativeMap(jsonMap)
-                                    promise.resolve(nativeMap)
-                                }, { e ->
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        {
+                            val result = JSONObject()
+                            result.put("success", true)
+                            result.put("filePath", filePath)
+                            val jsonMap = JsonUtilities.jsonObjectToMap(result)
+                            val nativeMap = Arguments.makeNativeMap(jsonMap)
+                            promise.resolve(nativeMap)
+                        }, { e ->
                             promise.reject("exportXFDF error", e)
                         })
             }
@@ -676,38 +676,38 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
                 }
 
                 val wordRects = ArrayList<Map<String, Any>>()
-                
+
                 // Split text into words using regex
                 val wordPattern = "\\S+".toRegex()
                 val matches = wordPattern.findAll(pageText)
-                
+
                 for (match in matches) {
                     val word = match.value
                     val wordStart = match.range.first
                     val wordLength = match.range.last - match.range.first + 1
-                    
+
                     try {
                         // Get text rects for this specific word's character range
                         val wordRectsList: List<RectF> = document.getPageTextRects(pageIndex, wordStart, wordLength, true)
-                        
+
                         if (wordRectsList.isNotEmpty()) {
                             // Merge multiple rects into one bounding box for the word
                             var minLeft = Float.MAX_VALUE
                             var minTop = Float.MAX_VALUE
                             var maxRight = Float.MIN_VALUE
                             var maxBottom = Float.MIN_VALUE
-                            
+
                             for (rect in wordRectsList) {
                                 minLeft = minOf(minLeft, rect.left)
                                 minTop = minOf(minTop, rect.top)
                                 maxRight = maxOf(maxRight, rect.right)
                                 maxBottom = maxOf(maxBottom, rect.bottom)
                             }
-                            
+
                             // Return PDF coordinates to match iOS (bottom-left origin, y increases upward)
                             // Calculate height as absolute difference (always positive)
                             val height = kotlin.math.abs(minTop - maxBottom)
-                            
+
                             // Determine y coordinate (bottom edge in PDF coords)
                             // If minTop > maxBottom: PDF coords, use maxBottom directly
                             // If minTop < maxBottom: Screen coords, convert maxBottom to PDF
@@ -716,7 +716,7 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
                             } else {
                                 pageHeight - maxBottom  // Convert from screen to PDF coords
                             }
-                            
+
                             val wordMap = mapOf(
                                 "text" to word,
                                 "frame" to mapOf(
@@ -748,30 +748,30 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
             this.getDocument(reference)?.document?.let { document ->
                 val pageIndex = signatureData.getInt("pageIndex")
                 val bboxArray = signatureData.getArray("bbox")
-                
+
                 if (bboxArray == null || bboxArray.size() != 4) {
                     promise.reject("addElectronicSignatureField", "Invalid bbox array", null)
                     return
                 }
-                
+
                 // Get page size for coordinate conversion
                 val pageSize = document.getPageSize(pageIndex)
                 val pageHeight = pageSize?.height ?: 0f
-                
+
                 // Bbox comes in PDF coordinates (from getPageTextRects, matching iOS)
                 // Match iOS approach: use bottom as y coordinate, calculate height
                 val left = bboxArray.getDouble(0).toFloat()
                 var topPDF = bboxArray.getDouble(1).toFloat()  // PDF coordinates
                 val right = bboxArray.getDouble(2).toFloat()
                 var bottomPDF = bboxArray.getDouble(3).toFloat()  // PDF coordinates
-                
+
                 // Handle case where TypeScript sends top < bottom (backwards for PDF)
                 if (topPDF < bottomPDF) {
                     val temp = topPDF
                     topPDF = bottomPDF
                     bottomPDF = temp
                 }
-                
+
                 // Match iOS: iOS uses CGRect(x: left, y: bottom, width: right-left, height: top-bottom)
                 // Use PDF coordinates directly - PSPDFKit Android should handle PDF coords like iOS
                 // RectF(left, top, right, bottom) where in PDF coords: top > bottom (top is higher y)
@@ -781,16 +781,16 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
                     right,
                     bottomPDF
                 )
-                
+
                 val fullyQualifiedName = signatureData.getString("fullyQualifiedName")
                 if (fullyQualifiedName == null) {
                     promise.reject("addElectronicSignatureField", "fullyQualifiedName is required", null)
                     return
                 }
-                
+
                 val signatureFormConfiguration = SignatureFormConfiguration.Builder(pageIndex, rectFSignatureFormConfiguration)
                     .build()
-                
+
                 document.formProvider.addFormElementToPage(fullyQualifiedName, signatureFormConfiguration)
                 promise.resolve(true)
             } ?: run {
@@ -806,30 +806,30 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
             this.getDocument(reference)?.document?.let { document ->
                 val pageIndex = formData.getInt("pageIndex")
                 val bboxArray = formData.getArray("bbox")
-                
+
                 if (bboxArray == null || bboxArray.size() != 4) {
                     promise.reject("addTextFormField", "Invalid bbox array", null)
                     return
                 }
-                
+
                 // Get page size for coordinate conversion
                 val pageSize = document.getPageSize(pageIndex)
                 val pageHeight = pageSize?.height ?: 0f
-                
+
                 // Bbox comes in PDF coordinates (from getPageTextRects, matching iOS)
                 // Match iOS approach: use bottom as y coordinate, calculate height
                 val left = bboxArray.getDouble(0).toFloat()
                 var topPDF = bboxArray.getDouble(1).toFloat()  // PDF coordinates
                 val right = bboxArray.getDouble(2).toFloat()
                 var bottomPDF = bboxArray.getDouble(3).toFloat()  // PDF coordinates
-                
+
                 // Handle case where TypeScript sends top < bottom (backwards for PDF)
                 if (topPDF < bottomPDF) {
                     val temp = topPDF
                     topPDF = bottomPDF
                     bottomPDF = temp
                 }
-                
+
                 // Match iOS: iOS uses CGRect(x: left, y: bottom, width: right-left, height: top-bottom)
                 // Use PDF coordinates directly - PSPDFKit Android should handle PDF coords like iOS
                 // RectF(left, top, right, bottom) where in PDF coords: top > bottom (top is higher y)
@@ -839,16 +839,16 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
                     right,
                     bottomPDF
                 )
-                
+
                 val fullyQualifiedName = formData.getString("fullyQualifiedName")
                 if (fullyQualifiedName == null) {
                     promise.reject("addTextFormField", "fullyQualifiedName is required", null)
                     return
                 }
-                
+
                 val textFormConfiguration = TextFormConfiguration.Builder(pageIndex, rectFFormConfiguration)
                     .build()
-                
+
                 document.formProvider.addFormElementToPage(fullyQualifiedName, textFormConfiguration)
                 promise.resolve(true)
             } ?: run {
