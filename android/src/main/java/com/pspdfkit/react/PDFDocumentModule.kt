@@ -28,6 +28,9 @@ import com.pspdfkit.forms.ComboBoxFormElement
 import com.pspdfkit.forms.EditableButtonFormElement
 import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
+import com.pspdfkit.forms.configuration.SignatureFormConfiguration
+import com.pspdfkit.forms.configuration.TextFormConfiguration
+import android.graphics.RectF
 import com.pspdfkit.react.helper.AnnotationUtils
 import com.pspdfkit.react.helper.BookmarkUtils
 import com.pspdfkit.react.helper.ConversionHelpers.getAnnotationTypes
@@ -650,6 +653,209 @@ class PDFDocumentModule(reactContext: ReactApplicationContext) : ReactContextBas
             }
         } catch (e: Throwable) {
             promise.reject("getOverlappingSignature", e)
+        }
+    }
+
+    @ReactMethod fun getPageTextRects(reference: Int, pageIndex: Int, promise: Promise) {
+        try {
+            this.getDocument(reference)?.document?.let { document ->
+                if (pageIndex < 0 || pageIndex >= document.pageCount) {
+                    promise.reject("getPageTextRects", "Page index out of bounds", null)
+                    return
+                }
+
+                // Get page size for coordinate conversion
+                val pageSize = document.getPageSize(pageIndex)
+                val pageHeight = pageSize?.height ?: 0f
+
+                // Get the full page text
+                val pageText = document.getPageText(pageIndex)
+                if (pageText == null || pageText.isEmpty()) {
+                    promise.resolve(Arguments.makeNativeArray(ArrayList<Map<String, Any>>()))
+                    return
+                }
+
+                val wordRects = ArrayList<Map<String, Any>>()
+                
+                // Split text into words using regex
+                val wordPattern = "\\S+".toRegex()
+                val matches = wordPattern.findAll(pageText)
+                
+                for (match in matches) {
+                    val word = match.value
+                    val wordStart = match.range.first
+                    val wordLength = match.range.last - match.range.first + 1
+                    
+                    try {
+                        // Get text rects for this specific word's character range
+                        val wordRectsList: List<RectF> = document.getPageTextRects(pageIndex, wordStart, wordLength, true)
+                        
+                        if (wordRectsList.isNotEmpty()) {
+                            // Merge multiple rects into one bounding box for the word
+                            var minLeft = Float.MAX_VALUE
+                            var minTop = Float.MAX_VALUE
+                            var maxRight = Float.MIN_VALUE
+                            var maxBottom = Float.MIN_VALUE
+                            
+                            for (rect in wordRectsList) {
+                                minLeft = minOf(minLeft, rect.left)
+                                minTop = minOf(minTop, rect.top)
+                                maxRight = maxOf(maxRight, rect.right)
+                                maxBottom = maxOf(maxBottom, rect.bottom)
+                            }
+                            
+                            // Return PDF coordinates to match iOS (bottom-left origin, y increases upward)
+                            // Calculate height as absolute difference (always positive)
+                            val height = kotlin.math.abs(minTop - maxBottom)
+                            
+                            // Determine y coordinate (bottom edge in PDF coords)
+                            // If minTop > maxBottom: PDF coords, use maxBottom directly
+                            // If minTop < maxBottom: Screen coords, convert maxBottom to PDF
+                            val y = if (minTop > maxBottom) {
+                                maxBottom  // Already PDF coords, bottom edge
+                            } else {
+                                pageHeight - maxBottom  // Convert from screen to PDF coords
+                            }
+                            
+                            val wordMap = mapOf(
+                                "text" to word,
+                                "frame" to mapOf(
+                                    "x" to minLeft,
+                                    "y" to y,
+                                    "width" to (maxRight - minLeft),
+                                    "height" to height
+                                )
+                            )
+                            wordRects.add(wordMap)
+                        }
+                    } catch (e: Exception) {
+                        // If getting rects for this word fails, skip it and continue
+                        continue
+                    }
+                }
+
+                promise.resolve(Arguments.makeNativeArray(wordRects))
+            } ?: run {
+                promise.reject("getPageTextRects", "Document is nil", null)
+            }
+        } catch (e: Throwable) {
+            promise.reject("getPageTextRects", e.message ?: "Error getting text rects", e)
+        }
+    }
+
+    @ReactMethod fun addElectronicSignatureField(reference: Int, signatureData: ReadableMap, promise: Promise) {
+        try {
+            this.getDocument(reference)?.document?.let { document ->
+                val pageIndex = signatureData.getInt("pageIndex")
+                val bboxArray = signatureData.getArray("bbox")
+                
+                if (bboxArray == null || bboxArray.size() != 4) {
+                    promise.reject("addElectronicSignatureField", "Invalid bbox array", null)
+                    return
+                }
+                
+                // Get page size for coordinate conversion
+                val pageSize = document.getPageSize(pageIndex)
+                val pageHeight = pageSize?.height ?: 0f
+                
+                // Bbox comes in PDF coordinates (from getPageTextRects, matching iOS)
+                // Match iOS approach: use bottom as y coordinate, calculate height
+                val left = bboxArray.getDouble(0).toFloat()
+                var topPDF = bboxArray.getDouble(1).toFloat()  // PDF coordinates
+                val right = bboxArray.getDouble(2).toFloat()
+                var bottomPDF = bboxArray.getDouble(3).toFloat()  // PDF coordinates
+                
+                // Handle case where TypeScript sends top < bottom (backwards for PDF)
+                if (topPDF < bottomPDF) {
+                    val temp = topPDF
+                    topPDF = bottomPDF
+                    bottomPDF = temp
+                }
+                
+                // Match iOS: iOS uses CGRect(x: left, y: bottom, width: right-left, height: top-bottom)
+                // Use PDF coordinates directly - PSPDFKit Android should handle PDF coords like iOS
+                // RectF(left, top, right, bottom) where in PDF coords: top > bottom (top is higher y)
+                val rectFSignatureFormConfiguration = RectF(
+                    left,
+                    topPDF,
+                    right,
+                    bottomPDF
+                )
+                
+                val fullyQualifiedName = signatureData.getString("fullyQualifiedName")
+                if (fullyQualifiedName == null) {
+                    promise.reject("addElectronicSignatureField", "fullyQualifiedName is required", null)
+                    return
+                }
+                
+                val signatureFormConfiguration = SignatureFormConfiguration.Builder(pageIndex, rectFSignatureFormConfiguration)
+                    .build()
+                
+                document.formProvider.addFormElementToPage(fullyQualifiedName, signatureFormConfiguration)
+                promise.resolve(true)
+            } ?: run {
+                promise.reject("addElectronicSignatureField", "Document is nil", null)
+            }
+        } catch (e: Throwable) {
+            promise.reject("addElectronicSignatureField", e.message ?: "Failed to add signature field", e)
+        }
+    }
+
+    @ReactMethod fun addTextFormField(reference: Int, formData: ReadableMap, promise: Promise) {
+        try {
+            this.getDocument(reference)?.document?.let { document ->
+                val pageIndex = formData.getInt("pageIndex")
+                val bboxArray = formData.getArray("bbox")
+                
+                if (bboxArray == null || bboxArray.size() != 4) {
+                    promise.reject("addTextFormField", "Invalid bbox array", null)
+                    return
+                }
+                
+                // Get page size for coordinate conversion
+                val pageSize = document.getPageSize(pageIndex)
+                val pageHeight = pageSize?.height ?: 0f
+                
+                // Bbox comes in PDF coordinates (from getPageTextRects, matching iOS)
+                // Match iOS approach: use bottom as y coordinate, calculate height
+                val left = bboxArray.getDouble(0).toFloat()
+                var topPDF = bboxArray.getDouble(1).toFloat()  // PDF coordinates
+                val right = bboxArray.getDouble(2).toFloat()
+                var bottomPDF = bboxArray.getDouble(3).toFloat()  // PDF coordinates
+                
+                // Handle case where TypeScript sends top < bottom (backwards for PDF)
+                if (topPDF < bottomPDF) {
+                    val temp = topPDF
+                    topPDF = bottomPDF
+                    bottomPDF = temp
+                }
+                
+                // Match iOS: iOS uses CGRect(x: left, y: bottom, width: right-left, height: top-bottom)
+                // Use PDF coordinates directly - PSPDFKit Android should handle PDF coords like iOS
+                // RectF(left, top, right, bottom) where in PDF coords: top > bottom (top is higher y)
+                val rectFFormConfiguration = RectF(
+                    left,
+                    topPDF,
+                    right,
+                    bottomPDF
+                )
+                
+                val fullyQualifiedName = formData.getString("fullyQualifiedName")
+                if (fullyQualifiedName == null) {
+                    promise.reject("addTextFormField", "fullyQualifiedName is required", null)
+                    return
+                }
+                
+                val textFormConfiguration = TextFormConfiguration.Builder(pageIndex, rectFFormConfiguration)
+                    .build()
+                
+                document.formProvider.addFormElementToPage(fullyQualifiedName, textFormConfiguration)
+                promise.resolve(true)
+            } ?: run {
+                promise.reject("addTextFormField", "Document is nil", null)
+            }
+        } catch (e: Throwable) {
+            promise.reject("addTextFormField", e.message ?: "Failed to add text field", e)
         }
     }
 

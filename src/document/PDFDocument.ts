@@ -35,6 +35,7 @@ import { FormElement } from '../forms/FormElement';
 import { Forms } from '../forms/Forms';
 import { PDFPageInfo } from './PDFPageInfo';
 import { Bookmark } from './Bookmark';
+import { TextRect } from './TextRect';
 
 /**
  * @class PDFDocument
@@ -574,4 +575,17 @@ export class PDFDocument {
   getAnnotationFlags(uuid: string): Promise<Annotation.Flags[]> {
     return NativeModules.PDFDocumentManager.getAnnotationFlags(this.getRef(), uuid);
   }
+  /**
+   * Gets the text positions (word rects) for a specific page.
+   *
+   * @method getPageTextRects
+   * @memberof PDFDocument
+   * @param { number } pageIndex The page index to get the text rects for. Starts at 0.
+   * @example
+   * const textRects = await this.pdfRef.current?.getDocument().getPageTextRects(0);
+   * @returns { Promise<Array<TextRect>> } A promise containing an array of text rects, each containing the word text and its bounding frame in PDF coordinates.
+   */
+  getPageTextRects(pageIndex: number): Promise<Array<TextRect>> {
+        return NativeModules.PDFDocumentManager.getPageTextRects(this.getRef(), pageIndex);
+    }
 }

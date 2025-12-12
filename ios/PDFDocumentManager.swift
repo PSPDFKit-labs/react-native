@@ -578,4 +578,129 @@ import PSPDFKit
         }
         onSuccess([])
     }
+    
+    @objc func getPageTextRects(_ reference: NSNumber, pageIndex: Int, onSuccess: @escaping RCTPromiseResolveBlock, onError: @escaping RCTPromiseRejectBlock) -> Void {
+        guard let document = getDocument(reference) else {
+            onError("getPageTextRects", "Document is nil", nil)
+            return
+        }
+        
+        guard let parser = document.textParserForPage(at: PageIndex(pageIndex)) else {
+            onError("getPageTextRects", "Could not get text parser for page", nil)
+            return
+        }
+        
+        var wordRects = [[String: Any]]()
+        
+        for word in parser.words {
+            let frame = word.frame
+            let wordDict: [String: Any] = [
+                "text": word.stringValue,
+                "frame": [
+                    "x": frame.origin.x,
+                    "y": frame.origin.y,
+                    "width": frame.size.width,
+                    "height": frame.size.height
+                ]
+            ]
+            wordRects.append(wordDict)
+        }
+        
+        onSuccess(wordRects)
+    }
+    
+    @objc func addElectronicSignatureField(_ reference: NSNumber, signatureData: Dictionary<String, Any>, onSuccess: @escaping RCTPromiseResolveBlock, onError: @escaping RCTPromiseRejectBlock) -> Void {
+        guard let document = getDocument(reference) else {
+            onError("addElectronicSignatureField", "Document is nil", nil)
+            return
+        }
+        
+        guard let documentProvider = document.documentProviders.first else {
+            onError("addElectronicSignatureField", "DocumentProvider is nil", nil)
+            return
+        }
+        
+        guard let bboxArray = signatureData["bbox"] as? Array<NSNumber>,
+              bboxArray.count == 4,
+              let pageIndex = signatureData["pageIndex"] as? Int,
+              let fullyQualifiedName = signatureData["fullyQualifiedName"] as? String else {
+            onError("addElectronicSignatureField", "Invalid signature data", nil)
+            return
+        }
+        
+        // Convert bbox array [left, top, right, bottom] to CGRect (x, y, width, height)
+        let left = bboxArray[0].floatValue
+        let top = bboxArray[1].floatValue
+        let right = bboxArray[2].floatValue
+        let bottom = bboxArray[3].floatValue
+        
+        let signatureFormElement = SignatureFormElement()
+        signatureFormElement.boundingBox = CGRect(
+            x: CGFloat(left),
+            y: CGFloat(bottom),
+            width: CGFloat(right - left),
+            height: CGFloat(top - bottom)
+        )
+        signatureFormElement.pageIndex = PageIndex(pageIndex)
+        
+        do {
+            _ = try SignatureFormField.insertedSignatureField(
+                withFullyQualifiedName: fullyQualifiedName,
+                documentProvider: documentProvider,
+                formElement: signatureFormElement
+            )
+            
+            onSuccess(true)
+        } catch {
+            onError("addElectronicSignatureField", error.localizedDescription, error as NSError)
+        }
+    }
+    
+    @objc func addTextFormField(_ reference: NSNumber, formData: Dictionary<String, Any>, onSuccess: @escaping RCTPromiseResolveBlock, onError: @escaping RCTPromiseRejectBlock) -> Void {
+        guard let document = getDocument(reference) else {
+            onError("addTextFormField", "Document is nil", nil)
+            return
+        }
+        
+        guard let documentProvider = document.documentProviders.first else {
+            onError("addTextFormField", "DocumentProvider is nil", nil)
+            return
+        }
+        
+        guard let bboxArray = formData["bbox"] as? Array<NSNumber>,
+              bboxArray.count == 4,
+              let pageIndex = formData["pageIndex"] as? Int,
+              let fullyQualifiedName = formData["fullyQualifiedName"] as? String else {
+            onError("addTextFormField", "Invalid form data", nil)
+            return
+        }
+        
+        // Convert bbox array [left, top, right, bottom] to CGRect (x, y, width, height)
+        let left = bboxArray[0].floatValue
+        let top = bboxArray[1].floatValue
+        let right = bboxArray[2].floatValue
+        let bottom = bboxArray[3].floatValue
+        
+        let textFieldFormElement = TextFieldFormElement()
+        textFieldFormElement.boundingBox = CGRect(
+            x: CGFloat(left),
+            y: CGFloat(bottom),
+            width: CGFloat(right - left),
+            height: CGFloat(top - bottom)
+        )
+        textFieldFormElement.pageIndex = PageIndex(pageIndex)
+        
+        do {
+            _ = try TextFormField.insertedTextField(
+                withFullyQualifiedName: fullyQualifiedName,
+                documentProvider: documentProvider,
+                formElement: textFieldFormElement
+            )
+            onSuccess(true)
+        } catch {
+            onError("addTextFormField", error.localizedDescription, error as NSError)
+        }
+    }
+    
+    
 }

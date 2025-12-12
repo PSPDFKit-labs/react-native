@@ -59,4 +59,10 @@ RCT_EXTERN_METHOD(getOverlappingSignature:(NSNumber _Nonnull)reference fullyQual
 RCT_EXTERN_METHOD(setAnnotationFlags:(NSNumber _Nonnull)reference uuid:(NSString *)uuid flags:(NSArray<NSString *> *)flags onSuccess:(RCTPromiseResolveBlock)resolve onError:(RCTPromiseRejectBlock)reject);
 
 RCT_EXTERN_METHOD(getAnnotationFlags:(NSNumber _Nonnull)reference uuid:(NSString *)uuid onSuccess:(RCTPromiseResolveBlock)resolve onError:(RCTPromiseRejectBlock)reject);
+
+RCT_EXTERN_METHOD(getPageTextRects:(NSNumber _Nonnull)reference pageIndex:(NSInteger)pageIndex onSuccess:(RCTPromiseResolveBlock)resolve onError:(RCTPromiseRejectBlock)reject);
+
+RCT_EXTERN_METHOD(addElectronicSignatureField:(NSNumber _Nonnull)reference signatureData:(NSDictionary *)signatureData onSuccess:(RCTPromiseResolveBlock)resolve onError:(RCTPromiseRejectBlock)reject);
+
+RCT_EXTERN_METHOD(addTextFormField:(NSNumber _Nonnull)reference formData:(NSDictionary *)formData onSuccess:(RCTPromiseResolveBlock)resolve onError:(RCTPromiseRejectBlock)reject);
 @end
