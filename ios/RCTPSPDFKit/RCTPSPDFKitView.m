@@ -678,7 +678,16 @@
     [NutrientNotificationCenter.shared documentPageChangedWithPageIndex:pageIndex >= self.pdfController.document.pageCount ? 0 : pageIndex
                                                              documentID:self.pdfController.document.documentIdString
                                                             componentID:[self.reactTag integerValue]];
-    
+
+    if ([self.pdfController isUserInterfaceVisible] == NO) {
+        [self.pdfController setUserInterfaceVisible:YES animated:YES];
+    }
+
+    // Dismiss interface on all page changes after 3 seconds
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)),
+                   dispatch_get_main_queue(), ^{
+        [self.pdfController setUserInterfaceVisible:NO animated:YES];
+    });                                                        
 }
 
 - (void)documentDidFinishRendering {

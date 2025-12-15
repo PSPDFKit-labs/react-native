@@ -1342,7 +1342,7 @@ public class PdfView extends FrameLayout {
     }
 
     /** Returns the {@link PdfUiFragment}. */
-    private Observable<PdfUiFragment> getCurrentPdfUiFragment() {
+    Observable<PdfUiFragment> getCurrentPdfUiFragment() {
         return pdfUiFragmentGetter
             .filter(pdfUiFragments -> !pdfUiFragments.isEmpty())
             .map(pdfUiFragments -> pdfUiFragments.get(0))

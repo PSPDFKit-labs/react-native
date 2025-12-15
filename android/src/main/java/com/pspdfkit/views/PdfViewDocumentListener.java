@@ -15,6 +15,8 @@ package com.pspdfkit.views;
 
 import android.annotation.SuppressLint;
 import android.graphics.PointF;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MotionEvent;
 
 import androidx.annotation.NonNull;
@@ -83,6 +85,14 @@ class PdfViewDocumentListener implements DocumentListener, com.pspdfkit.ui.annot
         NutrientNotificationCenter.INSTANCE.documentLoaded(pdfDocument.getDocumentIdString(), parent.getId());
         eventDispatcher.dispatchEvent(new PdfViewDocumentLoadedEvent(parent.getId()));
         eventDispatcher.dispatchEvent(new OnReadyEvent(parent.getId()));
+
+        // Dismiss interface on first load after 3 seconds
+        parent.getCurrentPdfUiFragment()
+        .subscribe(pdfFragment -> {
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                pdfFragment.setUserInterfaceVisible(false, true);
+            }, 3000L);
+        });
     }
 
     @Override
@@ -150,6 +160,16 @@ class PdfViewDocumentListener implements DocumentListener, com.pspdfkit.ui.annot
                 NutrientNotificationCenter.INSTANCE.documentPageChanged(pageIndex, documentID, parent.getId());
             });
         }
+
+        // Dismiss interface on all page changes after 3 seconds
+        parent.getCurrentPdfUiFragment()
+        .subscribe(pdfFragment -> {
+            pdfFragment.setUserInterfaceVisible(true, true);
+
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                pdfFragment.setUserInterfaceVisible(false, true);
+            }, 3000L);
+        });
     }
 
     @Override

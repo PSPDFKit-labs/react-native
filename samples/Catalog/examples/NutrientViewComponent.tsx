@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, processColor, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, processColor, Text, TouchableOpacity, View } from 'react-native';
 import NutrientView, { PDFConfiguration } from '@nutrient-sdk/react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -29,6 +29,7 @@ export class NutrientViewComponent extends BaseExampleAutoHidingHeaderComponent 
           configuration={{
             iOSAllowToolbarTitleChange: false,
             toolbarTitle: 'My Awesome Report',
+            userInterfaceViewMode: Platform.OS === 'ios' ? 'alwaysVisible' : 'automatic',
             iOSBackgroundColor: processColor('lightgrey'),
             iOSUseParentNavigationBar: false,
             iOSDocumentInfoOptions: [PDFConfiguration.IOSDocumentInfoOption.OUTLINE, PDFConfiguration.IOSDocumentInfoOption.ANNOTATIONS],
