@@ -12,7 +12,7 @@
         <item name="pspdf__annotationCreationToolbarIconsStyle">@style/AppTheme.AnnotationCreationToolbarIconsStyle</item>
     </style>
 
-        <style name="AppTheme.AnnotationCreationToolbarIconsStyle">
+    <style name="AppTheme.AnnotationCreationToolbarIconsStyle">
         <item name="pspdf__iconsColor">#000000</item>
         <item name="pspdf__iconsColorActivated">#000000</item>
     </style>
