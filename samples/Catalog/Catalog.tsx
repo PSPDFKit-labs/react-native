@@ -27,6 +27,7 @@ import Measurement from './examples/Measurement';
 import { OpenImageDocument } from './examples/OpenImageDocument';
 import { ProgrammaticAnnotations } from './examples/ProgrammaticAnnotations';
 import { ProgrammaticFormFilling } from './examples/ProgrammaticFormFilling';
+import { SignatureInterception } from './examples/SignatureInterception';
 import { NutrientViewComponent } from './examples/NutrientViewComponent';
 import { SaveAs } from './examples/SaveAs';
 import { SplitPDF } from './examples/SplitPDF';
@@ -98,6 +99,10 @@ class Catalog extends React.Component {
           <Stack.Screen
             name="ProgrammaticFormFilling"
             component={ProgrammaticFormFilling}
+          />
+          <Stack.Screen
+            name="SignatureInterception"
+            component={SignatureInterception}
           />
           <Stack.Screen name="SplitPDF" component={SplitPDF} />
           <Stack.Screen

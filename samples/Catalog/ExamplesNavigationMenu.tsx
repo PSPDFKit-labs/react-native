@@ -125,6 +125,15 @@ export default [
     },
   },
   {
+    key: 'itemSignatureInterception',
+    name: 'Signature Interception',
+    description:
+      'Intercept signature field taps, lock form fields, and dismiss the signature pad programmatically.',
+    action: (component: any) => {
+      component.props.navigation.push('SignatureInterception');
+    },
+  },
+  {
     key: 'item11',
     name: 'Split PDF',
     description:
