@@ -32,6 +32,7 @@ import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.forms.FormElement;
 import com.pspdfkit.forms.FormField;
 import com.pspdfkit.forms.FormListeners;
+import com.pspdfkit.forms.FormType;
 import com.pspdfkit.listeners.DocumentListener;
 import com.pspdfkit.listeners.scrolling.DocumentScrollListener;
 import com.pspdfkit.listeners.scrolling.ScrollState;
@@ -42,6 +43,7 @@ import com.pspdfkit.react.events.PdfViewAnnotationTappedEvent;
 import com.pspdfkit.react.events.PdfViewDocumentLoadedEvent;
 import com.pspdfkit.react.events.PdfViewDocumentSaveFailedEvent;
 import com.pspdfkit.react.events.PdfViewDocumentSavedEvent;
+import com.pspdfkit.react.events.PdfViewSignatureFieldTappedEvent;
 import com.pspdfkit.ui.special_mode.controller.AnnotationSelectionController;
 import com.pspdfkit.ui.special_mode.manager.AnnotationManager;
 import com.pspdfkit.ui.special_mode.manager.FormManager;
@@ -50,7 +52,7 @@ import com.pspdfkit.utils.Size;
 import java.util.List;
 import java.util.Map;
 
-class PdfViewDocumentListener implements DocumentListener, com.pspdfkit.ui.annotations.OnAnnotationSelectedListener, AnnotationProvider.OnAnnotationUpdatedListener, FormListeners.OnFormFieldUpdatedListener, FormManager.OnFormElementSelectedListener, FormManager.OnFormElementDeselectedListener, DocumentScrollListener, BookmarkProvider.BookmarkListener {
+class PdfViewDocumentListener implements DocumentListener, com.pspdfkit.ui.annotations.OnAnnotationSelectedListener, AnnotationProvider.OnAnnotationUpdatedListener, FormListeners.OnFormFieldUpdatedListener, FormManager.OnFormElementSelectedListener, FormManager.OnFormElementDeselectedListener, FormManager.OnFormElementClickedListener, DocumentScrollListener, BookmarkProvider.BookmarkListener {
 
     @NonNull
     private final PdfView parent;
@@ -418,6 +420,24 @@ class PdfViewDocumentListener implements DocumentListener, com.pspdfkit.ui.annot
                 NutrientNotificationCenter.INSTANCE.didDeSelectFormField(formElement, documentID, componentIdFormDesel);
             });
         }
+    }
+
+    @Override
+    public boolean onFormElementClicked(@NonNull FormElement formElement) {
+        if (!parent.isInterceptSignatureFields() || formElement.getType() != FormType.SIGNATURE) {
+            // Not intercepted: let Nutrient perform its default form element handling.
+            return false;
+        }
+
+        String fullyQualifiedName = formElement.getFullyQualifiedName();
+        int pageIndex = formElement.getAnnotation().getPageIndex();
+        if (isFabricMode && fabricDelegate != null) {
+            fabricDelegate.onSignatureFieldTapped(fullyQualifiedName, pageIndex);
+        } else {
+            dispatchEvent(new PdfViewSignatureFieldTappedEvent(parent.getId(), fullyQualifiedName, pageIndex));
+        }
+        // Consume the click so the native signature UI is not presented.
+        return true;
     }
 
     @Override

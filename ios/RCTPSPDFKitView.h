@@ -44,6 +44,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) RCTBubblingEventBlock onShouldExecuteAction;
 /// Internal flag tracking whether onShouldExecuteAction is implemented in JS.
 @property (nonatomic, assign) BOOL hasShouldExecuteAction;
+/// When enabled, tapping a signature form field emits onSignatureFieldTapped and
+/// suppresses Nutrient's default signature UI.
+@property (nonatomic) BOOL interceptSignatureFields;
+@property (nonatomic, copy) RCTBubblingEventBlock onSignatureFieldTapped;
 @property (nonatomic, copy, nullable) NSArray<NSString *> *availableFontNames;
 @property (nonatomic, copy, nullable) NSString *selectedFontName;
 @property (nonatomic) BOOL showDownloadableFonts;
@@ -81,6 +85,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// Forms
 - (NSDictionary<NSString *, NSString *> *)getFormFieldValue:(NSString *)fullyQualifiedName;
 - (BOOL)setFormFieldValue:(NSString *)value fullyQualifiedName:(NSString *)fullyQualifiedName;
+- (BOOL)setFormFieldReadOnly:(NSString *)fullyQualifiedName readOnly:(BOOL)readOnly persist:(BOOL)persist;
+
+/// Electronic Signatures
+- (BOOL)dismissSignaturePad;
 
 /// Toolbar buttons customizations
 - (void)setLeftBarButtonItems:(nullable NSArray <NSString *> *)items forViewMode:(nullable NSString *) viewMode animated:(BOOL)animated;
@@ -124,6 +132,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)pspdfView:(RCTPSPDFKitView *)view didTapAnnotation:(PSPDFAnnotation *)annotation;
 /** Action execution callback for New Architecture bridging */
 - (void)pspdfView:(RCTPSPDFKitView *)view didRequestShouldExecuteActionWithPayload:(NSDictionary *)payload;
+/** Signature form field tap callback for New Architecture bridging */
+- (void)pspdfView:(RCTPSPDFKitView *)view didTapSignatureFieldWithFullyQualifiedName:(NSString *)fullyQualifiedName pageIndex:(NSInteger)pageIndex;
 @end
 
 NS_ASSUME_NONNULL_END

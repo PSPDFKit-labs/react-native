@@ -403,6 +403,25 @@
           self.onAnnotationTapped(updatedDictionary);
       }
   }
+  // Signature interception: when enabled, consume taps on signature form fields and
+  // notify JS instead of presenting Nutrient's default signature UI.
+  if (self.interceptSignatureFields && [annotation isKindOfClass:PSPDFSignatureFormElement.class]) {
+      PSPDFSignatureFormElement *signatureElement = (PSPDFSignatureFormElement *)annotation;
+      NSString *fullyQualifiedName = signatureElement.fullyQualifiedFieldName ?: @"";
+      NSInteger signaturePageIndex = (NSInteger)signatureElement.pageIndex;
+      if ([self.delegate respondsToSelector:@selector(pspdfView:didTapSignatureFieldWithFullyQualifiedName:pageIndex:)]) {
+          // Fabric path.
+          [(id<RCTPSPDFKitViewDelegate>)self.delegate pspdfView:self didTapSignatureFieldWithFullyQualifiedName:fullyQualifiedName pageIndex:signaturePageIndex];
+      } else if (self.onSignatureFieldTapped) {
+          // Legacy (Paper) path.
+          self.onSignatureFieldTapped(@{
+              @"fullyQualifiedName": fullyQualifiedName,
+              @"pageIndex": @(signaturePageIndex)
+          });
+      }
+      // The application handled the tap. Suppress the SDK default signature UI.
+      return YES;
+  }
   // When onShouldExecuteAction is present under New Architecture (Fabric), return NO so
   // PSPDFKit proceeds to shouldExecuteAction:, where we intercept and delegate to JS.
   // On legacy (Paper) we always let PSPDFKit handle taps normally and simply honor
@@ -755,6 +774,62 @@
     }
   }
   return success;
+}
+
+- (BOOL)setFormFieldReadOnly:(NSString *)fullyQualifiedName readOnly:(BOOL)readOnly persist:(BOOL)persist {
+  if (fullyQualifiedName.length == 0) {
+    NSLog(@"Invalid fully qualified name.");
+    return NO;
+  }
+
+  PSPDFDocument *document = self.pdfController.document;
+  VALIDATE_DOCUMENT(document, NO)
+
+  PSPDFFormField *formField = [document.formParser findFieldWithFullFieldName:fullyQualifiedName];
+  if (formField == nil) {
+    return NO;
+  }
+
+  if (persist) {
+    // Modifies the PDF form field flag. Persisted once the document is saved.
+    formField.isReadOnly = readOnly;
+  } else {
+    // Disables interaction for the current viewer session only.
+    formField.isEditable = !readOnly;
+  }
+
+  [self.pdfController reloadData];
+  return YES;
+}
+
+// MARK: - Electronic Signatures
+
+- (BOOL)dismissSignaturePad {
+  UIViewController *presented = self.pdfController.presentedViewController;
+  if (presented == nil) {
+    return NO;
+  }
+
+  UIViewController *visibleController = presented;
+  if ([presented isKindOfClass:UINavigationController.class]) {
+    UINavigationController *navigationController = (UINavigationController *)presented;
+    visibleController = navigationController.visibleViewController ?: navigationController;
+  }
+
+  // Only dismiss Nutrient's signature UI. NSClassFromString is used so both the
+  // Electronic Signatures controller and the legacy Annotations signature controller
+  // are recognized without a compile-time dependency on either.
+  Class signatureCreationControllerClass = NSClassFromString(@"PSPDFSignatureCreationViewController");
+  Class legacySignatureControllerClass = NSClassFromString(@"PSPDFSignatureViewController");
+  BOOL isSignatureController =
+      (signatureCreationControllerClass != Nil && [visibleController isKindOfClass:signatureCreationControllerClass]) ||
+      (legacySignatureControllerClass != Nil && [visibleController isKindOfClass:legacySignatureControllerClass]);
+  if (!isSignatureController) {
+    return NO;
+  }
+
+  [presented.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
+  return YES;
 }
 
 // MARK: - Notifications

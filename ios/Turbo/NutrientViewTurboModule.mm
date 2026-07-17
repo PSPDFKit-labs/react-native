@@ -268,8 +268,44 @@ RCT_EXPORT_MODULE();
     });
 }
 
-- (void)destroyView:(nonnull NSString *)reference { 
+- (void)destroyView:(nonnull NSString *)reference {
     // No-Op. Only Android.
+}
+
+- (void)setFormFieldReadOnly:(nonnull NSString *)reference
+          fullyQualifiedName:(nonnull NSString *)fullyQualifiedName
+                    readOnly:(BOOL)readOnly
+                     persist:(BOOL)persist
+                     resolve:(nonnull RCTPromiseResolveBlock)resolve
+                      reject:(nonnull RCTPromiseRejectBlock)reject {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        RCTPSPDFKitView *view = [[NutrientViewRegistry shared] viewForId:reference];
+        if (!view) {
+            reject(ERR_VIEW_NOT_FOUND, @"Fabric view not found for reference", [self _makeErrorWithCode:ERR_VIEW_NOT_FOUND message:@"Fabric view not found for reference"]);
+            return;
+        }
+
+        BOOL success = [view setFormFieldReadOnly:fullyQualifiedName readOnly:readOnly persist:persist];
+        if (success) {
+            resolve(@YES);
+        } else {
+            reject(ERR_OPERATION, @"No form field with that fully qualified name was found.", [self _makeErrorWithCode:ERR_OPERATION message:@"No form field with that fully qualified name was found."]);
+        }
+    });
+}
+
+- (void)dismissSignaturePad:(nonnull NSString *)reference
+                    resolve:(nonnull RCTPromiseResolveBlock)resolve
+                     reject:(nonnull RCTPromiseRejectBlock)reject {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        RCTPSPDFKitView *view = [[NutrientViewRegistry shared] viewForId:reference];
+        if (!view) {
+            reject(ERR_VIEW_NOT_FOUND, @"Fabric view not found for reference", [self _makeErrorWithCode:ERR_VIEW_NOT_FOUND message:@"Fabric view not found for reference"]);
+            return;
+        }
+
+        resolve(@([view dismissSignaturePad]));
+    });
 }
 
 - (NSDictionary *)dictionaryFromJSONString:(NSString *)jsonString {

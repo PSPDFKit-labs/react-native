@@ -130,6 +130,9 @@ class ReactInstantPdfViewManagerFabric : ViewGroupManager<InstantPdfView>(), Nut
                 override fun onShouldExecuteAction(requestId: String, action: com.pspdfkit.annotations.actions.Action, pageIndex: Int, url: String?) {
                     eventDispatcher?.dispatchEvent(FabricOnShouldExecuteActionEvent(com.facebook.react.uimanager.UIManagerHelper.getSurfaceId(reactContext), pdfView.id, requestId, pageIndex, action, url))
                 }
+                override fun onSignatureFieldTapped(fullyQualifiedName: String, pageIndex: Int) {
+                    // Signature interception is not supported on the Instant view.
+                }
             })
             return pdfView
         } else {

@@ -896,6 +896,10 @@ declare class NutrientView extends React.Component<Props, any, any> {
     /**
      * @ignore
      */
+    _onSignatureFieldTapped: (event: any) => void;
+    /**
+     * @ignore
+     */
     _onNavigationButtonClicked: (event: any) => void;
     /**
      * @ignore
@@ -1055,6 +1059,34 @@ declare class NutrientView extends React.Component<Props, any, any> {
      * @returns { Promise<boolean> } A promise resolving to ```true``` if the value was set successfully, and ```false``` if an error occurred.
      */
     setFormFieldValue: (fullyQualifiedName: string, value: string) => Promise<boolean>;
+    /**
+     * Makes the form field with the supplied fully qualified name read-only or editable.
+     *
+     * On iOS, when ```persist``` is ```true``` the PDF form field flag is modified so the change survives saving the document, and when ```false``` interaction is only disabled for the current viewer session without changing the saved PDF.
+     * On Android, the change is applied to the widget annotation flags of the form field and persists once the document is saved; the ```persist``` argument is ignored.
+     *
+     * @method setFormFieldReadOnly
+     * @memberof NutrientView
+     * @param { string } fullyQualifiedName The fully qualified name of the form field.
+     * @param { boolean } readOnly ```true``` to make the form field read-only, ```false``` to make it editable again.
+     * @param { boolean } [persist] Whether the change should be written to the PDF form field flags (default ```true```). iOS only.
+     * @example
+     * const result = await this.pdfRef.current.setFormFieldReadOnly('Name_Last', true, true);
+     *
+     * @returns { Promise<boolean> } A promise resolving to ```true``` when the form field was updated, and rejecting when no matching form field was found.
+     */
+    setFormFieldReadOnly: (fullyQualifiedName: string, readOnly: boolean, persist?: boolean) => Promise<boolean>;
+    /**
+     * Dismisses the native signature creation UI if it is currently presented.
+     *
+     * @method dismissSignaturePad
+     * @memberof NutrientView
+     * @example
+     * const dismissed = await this.pdfRef.current.dismissSignaturePad();
+     *
+     * @returns { Promise<boolean> } A promise resolving to ```true``` when a signature UI was dismissed, and ```false``` when no signature UI was presented.
+     */
+    dismissSignaturePad: () => Promise<boolean>;
     /**
      * Sets the left bar button items for the specified view mode.
      * Note: The same button item cannot be added to both the left and right bar button items simultaneously.
@@ -1267,6 +1299,7 @@ declare namespace NutrientView {
         let hideNavigationBar: boolean;
         let showCloseButton: boolean;
         let disableDefaultActionForTappedAnnotations: boolean;
+        let interceptSignatureFields: boolean;
         let disableAutomaticSaving: boolean;
         let annotationAuthorName: string;
         let imageSaveMode: string;
@@ -1277,6 +1310,7 @@ declare namespace NutrientView {
         let onDocumentSaved: Function;
         let onDocumentSaveFailed: Function;
         let onAnnotationTapped: Function;
+        let onSignatureFieldTapped: Function;
         let onAnnotationsChanged: Function;
         let onStateChanged: Function;
         let onCustomToolbarButtonTapped: Function;
