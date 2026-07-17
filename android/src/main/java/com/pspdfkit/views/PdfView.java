@@ -37,6 +37,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.facebook.react.bridge.Arguments;
@@ -81,6 +82,7 @@ import com.pspdfkit.forms.FormElement;
 import com.pspdfkit.forms.FormField;
 import com.pspdfkit.forms.TextFormElement;
 import com.pspdfkit.ui.signatures.ElectronicSignatureFragment;
+import com.pspdfkit.ui.signatures.SignaturePickerFragment;
 import com.pspdfkit.listeners.OnVisibilityChangedListener;
 import com.pspdfkit.listeners.SimpleDocumentListener;
 import com.pspdfkit.react.PDFDocumentModule;
@@ -1403,7 +1405,10 @@ public class PdfView extends FrameLayout {
     }
 
     /**
-     * Dismisses the currently presented electronic signature UI, if any.
+     * Dismisses the currently presented signature UI, if any. Depending on the license and
+     * whether saved signatures exist, the SDK presents either the electronic signature
+     * creation UI ({@link ElectronicSignatureFragment}) or the saved-signature picker
+     * ({@link SignaturePickerFragment}), so both are checked.
      *
      * @return {@code true} when a signature UI was found and dismissed, {@code false} otherwise.
      */
@@ -1422,9 +1427,14 @@ public class PdfView extends FrameLayout {
             }
         }
         for (FragmentManager manager : fragmentManagers) {
-            if (manager.findFragmentByTag(ElectronicSignatureFragment.FRAGMENT_TAG) != null) {
-                ElectronicSignatureFragment.dismiss(manager);
-                dismissed = true;
+            for (Fragment presentedFragment : manager.getFragments()) {
+                if (presentedFragment instanceof ElectronicSignatureFragment) {
+                    ElectronicSignatureFragment.dismiss(manager);
+                    dismissed = true;
+                } else if (presentedFragment instanceof SignaturePickerFragment) {
+                    SignaturePickerFragment.dismiss(manager);
+                    dismissed = true;
+                }
             }
         }
         return dismissed;

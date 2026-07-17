@@ -59,7 +59,7 @@ const dismissed = await pdfRef.current?.dismissSignaturePad();
 | `persist: true` | Sets `PSPDFFormField.isReadOnly` (PDF form field flag; persists once the document is saved) | Adds `AnnotationFlags.LOCKEDCONTENTS` to every widget annotation of the field, preserving existing flags (persists once saved) |
 | `persist: false` | Sets `PSPDFFormField.isEditable = false` (session-only; not written to the PDF) | Not supported — behaves like `persist: true` |
 | Missing field | Promise rejects (`field_not_found` on Paper, `OPERATION_FAILED` on New Architecture) | Promise resolves `false` (legacy) / rejects (New Architecture) |
-| `dismissSignaturePad()` targeting | Type-checks the presented controller against `PSPDFSignatureCreationViewController` (Electronic Signatures) and legacy `PSPDFSignatureViewController`; never dismisses unrelated modals | Locates `ElectronicSignatureFragment` by its public `FRAGMENT_TAG` across candidate fragment managers; never dismisses unrelated dialogs |
+| `dismissSignaturePad()` targeting | Type-checks the presented controller (including a wrapping navigation stack) against `PSPDFSignatureCreationViewController` (Electronic Signatures), legacy `PSPDFSignatureViewController`, and the saved-signature `PSPDFSignatureSelectorViewController`; never dismisses unrelated modals | Scans candidate fragment managers for `ElectronicSignatureFragment` (creation UI) *and* `SignaturePickerFragment` (saved-signature picker / legacy flow) instances and dismisses via the matching static helper; never dismisses unrelated dialogs |
 | Signature tap interception | `PSPDFViewControllerDelegate didTapOnAnnotation:` — consumes taps on `PSPDFSignatureFormElement` | `FormManager.OnFormElementClickedListener` — consumes clicks on `FormType.SIGNATURE` elements |
 
 **Why `LOCKEDCONTENTS` on Android:** the Android SDK's `FormField` exposes `isReadOnly()` as a getter only, and `AnnotationFlags.READONLY` is documented as ignored for widget annotations. Updating the widget's `LOCKEDCONTENTS` flag is the supported way to make an existing widget non-editable. Always copy the existing flag set and add/remove only `LOCKEDCONTENTS`.
@@ -71,6 +71,7 @@ const dismissed = await pdfRef.current?.dismissSignaturePad();
 - **Not a security boundary.** A PDF read-only flag is a UI/document constraint. Server-side validation must still verify which fields the user may change and whether a signature is authorized.
 - **Toolbar-initiated signatures are out of scope.** Interception covers signature *form field* taps. A signature started from the annotation toolbar is not intercepted; remove or replace the toolbar item if that flow must also be suppressed.
 - **The signature UI is modal.** While it is presented, React Native UI cannot be tapped. To exercise `dismissSignaturePad()` while the UI is open, call it from a timer/event rather than a button press.
+- **The signature UI is not always the creation pad.** Once a signature has been saved to the signature store (or under the legacy signature flow), tapping a signature field presents the saved-signature *picker* instead of the creation UI — `dismissSignaturePad()` recognizes both (see the targeting row above). And once a field is *signed*, tapping it selects the signature annotation (context menu) rather than opening any signature UI, so `dismissSignaturePad()` correctly resolves `false` in that state.
 
 ---
 
@@ -266,7 +267,8 @@ The following was verified live (Android emulator + iOS simulator, New Architect
 
 - Interception ON: tapping the signature field emits `{fullyQualifiedName: 'EMPLOYEE SIGNATURE', pageIndex: 0}` and the native signature UI does not open.
 - Interception OFF: the default native "Add Signature" UI opens unchanged.
-- `dismissSignaturePad()` resolves `true` and closes the UI when open; resolves `false` when nothing is presented; safe to call repeatedly.
+- `dismissSignaturePad()` resolves `true` and closes the UI when open; resolves `false` when nothing is presented; safe to call repeatedly across multiple open/close cycles.
+- With a saved signature in the store, tapping the field opens the saved-signature picker ("Signatures" list on Android) — `dismissSignaturePad()` dismisses it too (`true`).
 - `setFormFieldReadOnly('Name_Last', true)` blocks the editor for that field only (siblings unaffected); `false` restores editability. On iOS the editable-field highlight visibly disappears while locked.
 
 Not yet covered (recommended before production): save-and-reopen persistence assertions, fields with multiple widgets, device rotation while the signature UI is open, and both-architecture runs of the same matrix on physical devices.

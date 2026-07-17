@@ -810,20 +810,41 @@
     return NO;
   }
 
-  UIViewController *visibleController = presented;
+  // Depending on the license and whether saved signatures exist, the SDK presents the
+  // Electronic Signatures creation controller, the legacy Annotations signature
+  // controller, or the saved-signature selector — possibly wrapped in a navigation
+  // controller. Collect every candidate controller so all variants are recognized.
+  // NSClassFromString is used to avoid a compile-time dependency on either flow.
+  NSMutableArray<UIViewController *> *candidateControllers = [NSMutableArray array];
   if ([presented isKindOfClass:UINavigationController.class]) {
     UINavigationController *navigationController = (UINavigationController *)presented;
-    visibleController = navigationController.visibleViewController ?: navigationController;
+    [candidateControllers addObjectsFromArray:navigationController.viewControllers];
+    if (navigationController.visibleViewController != nil) {
+      [candidateControllers addObject:navigationController.visibleViewController];
+    }
+  } else {
+    [candidateControllers addObject:presented];
   }
 
-  // Only dismiss Nutrient's signature UI. NSClassFromString is used so both the
-  // Electronic Signatures controller and the legacy Annotations signature controller
-  // are recognized without a compile-time dependency on either.
-  Class signatureCreationControllerClass = NSClassFromString(@"PSPDFSignatureCreationViewController");
-  Class legacySignatureControllerClass = NSClassFromString(@"PSPDFSignatureViewController");
-  BOOL isSignatureController =
-      (signatureCreationControllerClass != Nil && [visibleController isKindOfClass:signatureCreationControllerClass]) ||
-      (legacySignatureControllerClass != Nil && [visibleController isKindOfClass:legacySignatureControllerClass]);
+  NSArray<NSString *> *signatureControllerClassNames = @[
+    @"PSPDFSignatureCreationViewController",
+    @"PSPDFSignatureViewController",
+    @"PSPDFSignatureSelectorViewController",
+  ];
+
+  BOOL isSignatureController = NO;
+  for (UIViewController *candidate in candidateControllers) {
+    for (NSString *className in signatureControllerClassNames) {
+      Class controllerClass = NSClassFromString(className);
+      if (controllerClass != Nil && [candidate isKindOfClass:controllerClass]) {
+        isSignatureController = YES;
+        break;
+      }
+    }
+    if (isSignatureController) {
+      break;
+    }
+  }
   if (!isSignatureController) {
     return NO;
   }
