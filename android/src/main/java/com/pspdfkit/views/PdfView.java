@@ -37,6 +37,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.facebook.react.bridge.Arguments;
@@ -73,11 +74,15 @@ import com.pspdfkit.document.formatters.XfdfFormatter;
 import com.pspdfkit.document.providers.ContentResolverDataProvider;
 import com.pspdfkit.document.providers.DataProvider;
 import com.pspdfkit.exceptions.InvalidPasswordException;
+import com.pspdfkit.annotations.WidgetAnnotation;
 import com.pspdfkit.forms.ChoiceFormElement;
 import com.pspdfkit.forms.ComboBoxFormElement;
 import com.pspdfkit.forms.EditableButtonFormElement;
+import com.pspdfkit.forms.FormElement;
 import com.pspdfkit.forms.FormField;
 import com.pspdfkit.forms.TextFormElement;
+import com.pspdfkit.ui.signatures.ElectronicSignatureFragment;
+import com.pspdfkit.ui.signatures.SignaturePickerFragment;
 import com.pspdfkit.listeners.OnVisibilityChangedListener;
 import com.pspdfkit.listeners.SimpleDocumentListener;
 import com.pspdfkit.react.PDFDocumentModule;
@@ -95,6 +100,7 @@ import com.pspdfkit.react.events.PdfViewDocumentLoadedEvent;
 import com.pspdfkit.react.events.PdfViewDocumentSaveFailedEvent;
 import com.pspdfkit.react.events.PdfViewDocumentSavedEvent;
 import com.pspdfkit.react.events.PdfViewNavigationButtonClickedEvent;
+import com.pspdfkit.react.events.PdfViewSignatureFieldTappedEvent;
 import com.pspdfkit.react.events.CustomToolbarButtonTappedEvent;
 import com.pspdfkit.react.events.PdfViewStateChangedEvent;
 import com.pspdfkit.react.helper.ConversionHelpers;
@@ -180,6 +186,7 @@ public class PdfView extends FrameLayout {
         void onAnnotationTapped(Annotation annotation);
         void onAnnotationsChanged(String eventType, Annotation annotation);
         void onShouldExecuteAction(String requestId, Action action, int pageIndex, @Nullable String url);
+        void onSignatureFieldTapped(String fullyQualifiedName, int pageIndex);
     }
 
     // Event data structure for state changes
@@ -301,6 +308,9 @@ public class PdfView extends FrameLayout {
     private boolean suppressShouldExecuteAction = false;
     private boolean hasShouldExecuteAction = false;
 
+    /** When enabled, tapping a signature form field emits onSignatureFieldTapped instead of opening the native signature UI. */
+    private boolean interceptSignatureFields = false;
+
     public PdfView(@NonNull Context context) {
         this(context, false);
     }
@@ -399,6 +409,14 @@ public class PdfView extends FrameLayout {
 
     boolean hasShouldExecuteAction() {
         return hasShouldExecuteAction;
+    }
+
+    public void setInterceptSignatureFields(boolean interceptSignatureFields) {
+        this.interceptSignatureFields = interceptSignatureFields;
+    }
+
+    public boolean isInterceptSignatureFields() {
+        return interceptSignatureFields;
     }
 
     @Nullable
@@ -963,6 +981,7 @@ public class PdfView extends FrameLayout {
         pdfFragment.addDocumentListener(pdfViewDocumentListener);
         pdfFragment.addOnFormElementSelectedListener(pdfViewDocumentListener);
         pdfFragment.addOnFormElementDeselectedListener(pdfViewDocumentListener);
+        pdfFragment.addOnFormElementClickedListener(pdfViewDocumentListener);
         pdfFragment.addOnAnnotationSelectedListener(pdfViewDocumentListener);
         pdfFragment.addOnAnnotationUpdatedListener(pdfViewDocumentListener);
         pdfFragment.addDocumentScrollListener(pdfViewDocumentListener);
@@ -1342,6 +1361,85 @@ public class PdfView extends FrameLayout {
             });
     }
 
+    /**
+     * Makes all widgets of the form field with the given fully qualified name read-only or editable
+     * by updating the {@link AnnotationFlags#LOCKEDCONTENTS} flag on the associated widget
+     * annotations. {@link AnnotationFlags#READONLY} is ignored for widget annotations, which is why
+     * the locked-contents flag is used instead. The change persists once the document is saved.
+     */
+    public Single<Boolean> setFormFieldReadOnly(@NonNull String fullyQualifiedName, boolean readOnly) {
+        return Single.fromCallable(() -> {
+            PdfDocument currentDocument = document;
+            if (currentDocument == null) {
+                throw new IllegalStateException("No document is loaded.");
+            }
+
+            boolean found = false;
+            for (FormElement element : currentDocument.getFormProvider().getFormElements()) {
+                if (!fullyQualifiedName.equals(element.getFullyQualifiedName())) {
+                    continue;
+                }
+
+                WidgetAnnotation widget = element.getAnnotation();
+                if (widget == null) {
+                    continue;
+                }
+
+                EnumSet<AnnotationFlags> currentFlags = widget.getFlags();
+                EnumSet<AnnotationFlags> updatedFlags = currentFlags.isEmpty()
+                    ? EnumSet.noneOf(AnnotationFlags.class)
+                    : EnumSet.copyOf(currentFlags);
+
+                if (readOnly) {
+                    updatedFlags.add(AnnotationFlags.LOCKEDCONTENTS);
+                } else {
+                    updatedFlags.remove(AnnotationFlags.LOCKEDCONTENTS);
+                }
+
+                widget.setFlags(updatedFlags);
+                found = true;
+            }
+
+            return found;
+        });
+    }
+
+    /**
+     * Dismisses the currently presented signature UI, if any. Depending on the license and
+     * whether saved signatures exist, the SDK presents either the electronic signature
+     * creation UI ({@link ElectronicSignatureFragment}) or the saved-signature picker
+     * ({@link SignaturePickerFragment}), so both are checked.
+     *
+     * @return {@code true} when a signature UI was found and dismissed, {@code false} otherwise.
+     */
+    public boolean dismissSignaturePad() {
+        boolean dismissed = false;
+        List<FragmentManager> fragmentManagers = new ArrayList<>();
+        if (fragmentManager != null) {
+            fragmentManagers.add(fragmentManager);
+        }
+        if (fragment != null && fragment.isAdded()) {
+            fragmentManagers.add(fragment.getChildFragmentManager());
+            PdfFragment pdfFragment = fragment.getPdfFragment();
+            if (pdfFragment != null && pdfFragment.isAdded()) {
+                fragmentManagers.add(pdfFragment.getParentFragmentManager());
+                fragmentManagers.add(pdfFragment.getChildFragmentManager());
+            }
+        }
+        for (FragmentManager manager : fragmentManagers) {
+            for (Fragment presentedFragment : manager.getFragments()) {
+                if (presentedFragment instanceof ElectronicSignatureFragment) {
+                    ElectronicSignatureFragment.dismiss(manager);
+                    dismissed = true;
+                } else if (presentedFragment instanceof SignaturePickerFragment) {
+                    SignaturePickerFragment.dismiss(manager);
+                    dismissed = true;
+                }
+            }
+        }
+        return dismissed;
+    }
+
     public JSONObject convertConfiguration() {
         try {
             JSONObject config = new JSONObject();
@@ -1442,6 +1540,7 @@ public class PdfView extends FrameLayout {
        map.put(CustomToolbarButtonTappedEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCustomToolbarButtonTapped"));
        map.put(CustomAnnotationContextualMenuItemTappedEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCustomAnnotationContextualMenuItemTapped"));
        map.put(CustomTextSelectionContextualMenuItemTappedEvent.EVENT_NAME, MapBuilder.of("registrationName", "onCustomTextSelectionContextualMenuItemTapped"));
+       map.put(PdfViewSignatureFieldTappedEvent.EVENT_NAME, MapBuilder.of("registrationName", "onSignatureFieldTapped"));
        return map;
     }
 

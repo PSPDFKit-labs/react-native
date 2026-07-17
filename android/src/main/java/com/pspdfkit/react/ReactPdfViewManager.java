@@ -79,6 +79,8 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
     public static final int COMMAND_SET_EXCLUDED_ANNOTATIONS = 14;
     public static final int COMMAND_SET_USER_INTERFACE_VISIBLE = 15;
     public static final int COMMAND_EXECUTE_ACTION = 16;
+    public static final int COMMAND_SET_FORM_FIELD_READ_ONLY = 17;
+    public static final int COMMAND_DISMISS_SIGNATURE_PAD = 18;
 
     private final CompositeDisposable annotationDisposables = new CompositeDisposable();
 
@@ -132,6 +134,8 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
         commandMap.put("setExcludedAnnotations", COMMAND_SET_EXCLUDED_ANNOTATIONS);
         commandMap.put("setUserInterfaceVisible", COMMAND_SET_USER_INTERFACE_VISIBLE);
         commandMap.put("executeAction", COMMAND_EXECUTE_ACTION);
+        commandMap.put("setFormFieldReadOnly", COMMAND_SET_FORM_FIELD_READ_ONLY);
+        commandMap.put("dismissSignaturePad", COMMAND_DISMISS_SIGNATURE_PAD);
         return commandMap;
     }
 
@@ -249,6 +253,11 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
         view.setDisableAutomaticSaving(disableAutomaticSaving);
     }
 
+    @ReactProp(name = "interceptSignatureFields")
+    public void setInterceptSignatureFields(PdfView view, boolean interceptSignatureFields) {
+        view.setInterceptSignatureFields(interceptSignatureFields);
+    }
+
     @ReactProp(name = "annotationAuthorName")
     public void setAnnotationAuthorName(PdfView view, String annotationAuthorName) {
         PSPDFKitPreferences.get(view.getContext()).setAnnotationCreator(annotationAuthorName);
@@ -360,6 +369,31 @@ public class ReactPdfViewManager extends ViewGroupManager<PdfView> {
                             root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, false));
                         });
                     annotationDisposables.add(annotationDisposable);
+                }
+                break;
+            case COMMAND_SET_FORM_FIELD_READ_ONLY:
+                if (args != null && args.size() == 3) {
+                    final int requestId = args.getInt(0);
+                    Disposable readOnlyDisposable = root.setFormFieldReadOnly(args.getString(1), args.getBoolean(2))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(fieldFound -> {
+                            root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, fieldFound));
+                        }, throwable -> {
+                            root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, throwable));
+                        });
+                    annotationDisposables.add(readOnlyDisposable);
+                }
+                break;
+            case COMMAND_DISMISS_SIGNATURE_PAD:
+                if (args != null && args.size() == 1) {
+                    final int requestId = args.getInt(0);
+                    try {
+                        boolean result = root.dismissSignaturePad();
+                        root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, result));
+                    } catch (Exception e) {
+                        root.getEventDispatcher().dispatchEvent(new PdfViewDataReturnedEvent(root.getId(), requestId, e));
+                    }
                 }
                 break;
             case COMMAND_REMOVE_FRAGMENT:

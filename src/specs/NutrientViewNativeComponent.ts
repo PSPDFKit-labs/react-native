@@ -450,6 +450,11 @@ export interface NativeProps extends ViewProps {
   // Basic interaction settings
   disableDefaultActionForTappedAnnotations?: boolean;
   /**
+   * When true, tapping a signature form field emits onSignatureFieldTapped and
+   * suppresses the native signature UI.
+   */
+  interceptSignatureFields?: WithDefault<boolean, false>;
+  /**
    * Internal flag used so native knows whether onShouldExecuteAction is actually
    * implemented on the JS side. When false, native should not intercept actions.
    */
@@ -502,6 +507,13 @@ export interface NativeProps extends ViewProps {
     pageIndex: Int32;
     actionType?: string;
     url?: string;
+  }>;
+  /**
+   * Called when a signature form field is tapped while interceptSignatureFields is enabled.
+   */
+  onSignatureFieldTapped?: BubblingEventHandler<{
+    fullyQualifiedName: string;
+    pageIndex: Int32;
   }>;
 }
 

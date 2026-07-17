@@ -249,6 +249,42 @@ public class NutrientViewTurboModule extends NativeNutrientViewTurboModuleSpec {
     }
 
     @Override
+    public void setFormFieldReadOnly(String reference, String fullyQualifiedName, boolean readOnly, boolean persist, Promise promise) {
+        PdfView view = NutrientViewRegistry.getInstance().getViewForId(reference);
+        if (view == null) {
+            promise.reject(Errors.VIEW_NOT_FOUND, "No view found for reference: " + reference);
+            return;
+        }
+
+        // Android widget-annotation flags are always written to the document model,
+        // so the persist argument has no transient counterpart here.
+        view.setFormFieldReadOnly(fullyQualifiedName, readOnly)
+            .subscribeOn(io.reactivex.rxjava3.schedulers.Schedulers.io())
+            .observeOn(io.reactivex.rxjava3.android.schedulers.AndroidSchedulers.mainThread())
+            .subscribe(
+                promise::resolve,
+                throwable -> promise.reject(Errors.OPERATION_FAILED, throwable.getMessage())
+            );
+    }
+
+    @Override
+    public void dismissSignaturePad(String reference, Promise promise) {
+        PdfView view = NutrientViewRegistry.getInstance().getViewForId(reference);
+        if (view == null) {
+            promise.reject(Errors.VIEW_NOT_FOUND, "No view found for reference: " + reference);
+            return;
+        }
+
+        view.post(() -> {
+            try {
+                promise.resolve(view.dismissSignaturePad());
+            } catch (Exception e) {
+                promise.reject(Errors.OPERATION_FAILED, e.getMessage());
+            }
+        });
+    }
+
+    @Override
     public void destroyView(String reference) {
         PdfView view = NutrientViewRegistry.getInstance().getViewForId(reference);
         if (view == null) {

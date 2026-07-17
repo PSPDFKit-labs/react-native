@@ -117,6 +117,12 @@ export interface Spec extends TurboModule {
   setExcludedAnnotations: (reference: string, annotations: string[]) => void;
   setUserInterfaceVisible: (reference: string, visible: boolean) => Promise<boolean>;
   destroyView: (reference: string) => void;
+
+  // Forms
+  setFormFieldReadOnly: (reference: string, fullyQualifiedName: string, readOnly: boolean, persist: boolean) => Promise<boolean>;
+
+  // Electronic Signatures
+  dismissSignaturePad: (reference: string) => Promise<boolean>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NutrientViewTurboModule'); 

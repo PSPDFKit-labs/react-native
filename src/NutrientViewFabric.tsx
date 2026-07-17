@@ -27,6 +27,8 @@ export interface NutrientViewFabricRef {
   destroyView: () => void;
   setPageIndex: (pageIndex: number, animated: boolean) => Promise<boolean> | void;
   executeAction: (requestId: string, allow: boolean) => Promise<boolean> | void;
+  setFormFieldReadOnly: (fullyQualifiedName: string, readOnly: boolean, persist?: boolean) => Promise<boolean>;
+  dismissSignaturePad: () => Promise<boolean>;
 }
 
 // Fabric component using the actual native component
@@ -107,6 +109,14 @@ const NutrientViewFabric = forwardRef<NutrientViewFabricRef, NativeProps>((props
 
     executeAction: (requestId: string, allow: boolean) => {
       return NativeNutrientViewTurboModule.executeAction(instanceId.toString(), requestId, allow);
+    },
+
+    setFormFieldReadOnly: (fullyQualifiedName: string, readOnly: boolean, persist: boolean = true) => {
+      return NativeNutrientViewTurboModule.setFormFieldReadOnly(instanceId.toString(), fullyQualifiedName, readOnly, persist);
+    },
+
+    dismissSignaturePad: () => {
+      return NativeNutrientViewTurboModule.dismissSignaturePad(instanceId.toString());
     }
   }), [instanceId]);
   
@@ -223,6 +233,17 @@ const NutrientViewFabric = forwardRef<NutrientViewFabricRef, NativeProps>((props
           (props as any).onReady({});
         }
       : undefined,
+    onSignatureFieldTapped: (props as any).onSignatureFieldTapped
+      ? (e: any) => {
+          const native = e?.nativeEvent ?? e;
+          (props as any).onSignatureFieldTapped({
+            fullyQualifiedName: native?.fullyQualifiedName,
+            pageIndex: native?.pageIndex,
+          });
+        }
+      : undefined,
+    // Explicit boolean so native always gets a defined value when the prop is omitted
+    interceptSignatureFields: (props as any).interceptSignatureFields === true,
     // Internal flag so native only intercepts actions when a JS handler is present
     hasShouldExecuteAction: !!(props as any).onShouldExecuteAction,
     // Convert numeric instanceId to string for React Native nativeID

@@ -48,6 +48,7 @@ import io.nutrient.react.events.FabricOnNavigationButtonClickedEvent
 import io.nutrient.react.events.FabricOnAnnotationTappedEvent
 import io.nutrient.react.events.FabricOnAnnotationsChangedEvent
 import io.nutrient.react.events.FabricOnShouldExecuteActionEvent
+import io.nutrient.react.events.FabricOnSignatureFieldTappedEvent
 import com.pspdfkit.react.NutrientViewRegistry
 
 class ReactPdfViewManagerFabric : ViewGroupManager<PdfView>(), NutrientViewManagerInterface<PdfView> {
@@ -196,6 +197,11 @@ class ReactPdfViewManagerFabric : ViewGroupManager<PdfView>(), NutrientViewManag
                     val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
                     eventDispatcher?.dispatchEvent(FabricOnReadyEvent(surfaceId, pdfView.id))
                 }
+
+                override fun onSignatureFieldTapped(fullyQualifiedName: String, pageIndex: Int) {
+                    val surfaceId = UIManagerHelper.getSurfaceId(reactContext)
+                    eventDispatcher?.dispatchEvent(FabricOnSignatureFieldTappedEvent(surfaceId, pdfView.id, fullyQualifiedName, pageIndex))
+                }
             })
 
             pdfView.inject(
@@ -274,6 +280,7 @@ class ReactPdfViewManagerFabric : ViewGroupManager<PdfView>(), NutrientViewManag
         map["onAnnotationTapped"] = mapOf("registrationName" to "onAnnotationTapped")
         map["onAnnotationsChanged"] = mapOf("registrationName" to "onAnnotationsChanged")
         map["onShouldExecuteAction"] = mapOf("registrationName" to "onShouldExecuteAction")
+        map["onSignatureFieldTapped"] = mapOf("registrationName" to "onSignatureFieldTapped")
         return map
     }
 
@@ -374,6 +381,10 @@ class ReactPdfViewManagerFabric : ViewGroupManager<PdfView>(), NutrientViewManag
 
     override fun setDisableDefaultActionForTappedAnnotations(view: PdfView, value: Boolean) {
         view.setDisableDefaultActionForTappedAnnotations(value)
+    }
+
+    override fun setInterceptSignatureFields(view: PdfView, value: Boolean) {
+        view.setInterceptSignatureFields(value)
     }
 
     override fun setHasShouldExecuteAction(view: PdfView, value: Boolean) {

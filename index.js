@@ -143,6 +143,7 @@ class NutrientView extends React.Component {
             onReady={this._onReady}
             onShouldExecuteAction={hasShouldExecute ? this._onShouldExecuteAction : undefined}
             hasShouldExecuteAction={hasShouldExecute}
+            onSignatureFieldTapped={this._onSignatureFieldTapped}
           />
         );
       } else {
@@ -173,6 +174,7 @@ class NutrientView extends React.Component {
             onReady={this._onReady}
             onShouldExecuteAction={hasShouldExecute ? this._onShouldExecuteAction : undefined}
             hasShouldExecuteAction={hasShouldExecute}
+            onSignatureFieldTapped={this._onSignatureFieldTapped}
           />
         );
       }
@@ -241,6 +243,15 @@ class NutrientView extends React.Component {
   _onAnnotationsChanged = event => {
     if (this.props.onAnnotationsChanged) {
       this.props.onAnnotationsChanged(event.nativeEvent);
+    }
+  };
+
+  /**
+   * @ignore
+   */
+  _onSignatureFieldTapped = event => {
+    if (this.props.onSignatureFieldTapped) {
+      this.props.onSignatureFieldTapped(event.nativeEvent);
     }
   };
 
@@ -693,6 +704,97 @@ class NutrientView extends React.Component {
       return NativeModules.PSPDFKitViewManager.setFormFieldValue(
         value,
         fullyQualifiedName,
+        findNodeHandle(this._componentRef.current),
+      );
+    }
+  };
+
+  /**
+   * Makes the form field with the supplied fully qualified name read-only or editable.
+   *
+   * On iOS, when ```persist``` is ```true``` the PDF form field flag is modified so the change survives saving the document, and when ```false``` interaction is only disabled for the current viewer session without changing the saved PDF.
+   * On Android, the change is applied to the widget annotation flags of the form field and persists once the document is saved; the ```persist``` argument is ignored.
+   *
+   * @method setFormFieldReadOnly
+   * @memberof NutrientView
+   * @param { string } fullyQualifiedName The fully qualified name of the form field.
+   * @param { boolean } readOnly ```true``` to make the form field read-only, ```false``` to make it editable again.
+   * @param { boolean } [persist] Whether the change should be written to the PDF form field flags (default ```true```). iOS only.
+   * @example
+   * const result = await this.pdfRef.current.setFormFieldReadOnly('Name_Last', true, true);
+   *
+   * @returns { Promise<boolean> } A promise resolving to ```true``` when the form field was updated, and rejecting when no matching form field was found.
+   */
+  setFormFieldReadOnly = function (fullyQualifiedName, readOnly, persist = true) {
+    const { isNewArchitectureEnabled } = require('./lib/ArchitectureDetector');
+    if (isNewArchitectureEnabled()) {
+      return this._fabricRef.current?.setFormFieldReadOnly(
+        fullyQualifiedName,
+        readOnly,
+        persist,
+      );
+    }
+    if (Platform.OS === 'android') {
+      let requestId = this._nextRequestId++;
+      let requestMap = this._requestMap;
+
+      // We create a promise here that will be resolved once onDataReturned is called.
+      let promise = new Promise(function (resolve, reject) {
+        requestMap[requestId] = { resolve: resolve, reject: reject };
+      });
+
+      UIManager.dispatchViewManagerCommand(
+        findNodeHandle(this._componentRef.current),
+        this._getViewManagerConfig('RCTPSPDFKitView').Commands
+          .setFormFieldReadOnly,
+        [requestId, fullyQualifiedName, readOnly],
+      );
+
+      return promise;
+    } else if (Platform.OS === 'ios') {
+      return NativeModules.PSPDFKitViewManager.setFormFieldReadOnly(
+        fullyQualifiedName,
+        readOnly,
+        persist,
+        findNodeHandle(this._componentRef.current),
+      );
+    }
+  };
+
+  /**
+   * Dismisses the native signature creation UI if it is currently presented.
+   *
+   * @method dismissSignaturePad
+   * @memberof NutrientView
+   * @example
+   * const dismissed = await this.pdfRef.current.dismissSignaturePad();
+   *
+   * @returns { Promise<boolean> } A promise resolving to ```true``` when a signature UI was dismissed, and ```false``` when no signature UI was presented.
+   */
+  dismissSignaturePad = function () {
+    const { isNewArchitectureEnabled } = require('./lib/ArchitectureDetector');
+    if (isNewArchitectureEnabled()) {
+      return this._fabricRef.current?.dismissSignaturePad();
+    }
+    if (Platform.OS === 'android') {
+      let requestId = this._nextRequestId++;
+      let requestMap = this._requestMap;
+
+      // We create a promise here that will be resolved once onDataReturned is called.
+      let promise = new Promise(function (resolve, reject) {
+        requestMap[requestId] = { resolve: resolve, reject: reject };
+      });
+
+      UIManager.dispatchViewManagerCommand(
+        findNodeHandle(this._componentRef.current),
+        this._getViewManagerConfig('RCTPSPDFKitView').Commands
+          .dismissSignaturePad,
+        [requestId],
+      );
+
+      return promise;
+    } else if (Platform.OS === 'ios') {
+      return NativeModules.PSPDFKitViewManager.dismissSignaturePad(
         findNodeHandle(this._componentRef.current),
       );
     }
@@ -1330,6 +1432,13 @@ NutrientView.propTypes = {
    */
   disableDefaultActionForTappedAnnotations: PropTypes.bool,
   /**
+   * When enabled, tapping a signature form field will emit the ```onSignatureFieldTapped``` callback and suppress the native signature creation UI. Disabled by default (```false```).
+   * Use this to replace Nutrient's signature flow with a custom signing workflow.
+   * @type {boolean}
+   * @memberof NutrientView
+   */
+  interceptSignatureFields: PropTypes.bool,
+  /**
    * Controls whether or not the document will automatically be saved. Defaults to automatically saving (```false```).
    * @type {boolean}
    * @deprecated Since Nutrient React Native SDK 4.0. Use ```disableDocumentEditing``` on the ```PDFConfiguration``` object instead.
@@ -1432,6 +1541,18 @@ NutrientView.propTypes = {
    * }}
    */
   onAnnotationTapped: PropTypes.func,
+  /**
+   * Callback that's called when a signature form field is tapped while ```interceptSignatureFields``` is enabled.
+   * The result contains the fully qualified name of the signature form field and the page index it is located on.
+   * @type {function}
+   * @memberof NutrientView
+   * @example
+   * onSignatureFieldTapped={result => {
+   *     // { fullyQualifiedName: 'Applicant.Signature', pageIndex: 2 }
+   *     // Start a custom signing workflow here.
+   * }}
+   */
+  onSignatureFieldTapped: PropTypes.func,
   /**
    * Callback that's called when an annotation is added, changed, or removed.
    * The result contains the type of change, as well as an array of the InstantJSON annotations.

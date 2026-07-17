@@ -309,6 +309,18 @@ using namespace facebook::react;
   _eventEmitter->onShouldExecuteAction(eventPayload);
 }
 
+- (void)pspdfView:(RCTPSPDFKitView *)view didTapSignatureFieldWithFullyQualifiedName:(NSString *)fullyQualifiedName pageIndex:(NSInteger)pageIndex {
+  if (!_eventEmitter) {
+    return;
+  }
+
+  facebook::react::NutrientViewEventEmitter::OnSignatureFieldTapped payload{
+    fullyQualifiedName ? std::string([fullyQualifiedName UTF8String]) : std::string(""),
+    (int)pageIndex
+  };
+  _eventEmitter->onSignatureFieldTapped(payload);
+}
+
 - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
 {
   [super updateProps:props oldProps:oldProps];
@@ -359,6 +371,7 @@ using namespace facebook::react;
       _disableDefaultActionForTappedAnnotations = newProps->disableDefaultActionForTappedAnnotations;
       _view.disableDefaultActionForTappedAnnotations = _disableDefaultActionForTappedAnnotations;
       _view.hasShouldExecuteAction = newProps->hasShouldExecuteAction;
+      _view.interceptSignatureFields = newProps->interceptSignatureFields;
       _showNavigationButtonInToolbar = newProps->showNavigationButtonInToolbar;
       if (!newProps->availableFontNamesJSONString.empty()) {
         _availableFontNamesJSONString = RCTNSStringFromString(newProps->availableFontNamesJSONString);

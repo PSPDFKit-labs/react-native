@@ -175,6 +175,10 @@ RCT_EXPORT_VIEW_PROPERTY(onCustomTextSelectionContextualMenuItemTapped, RCTBubbl
 
 RCT_EXPORT_VIEW_PROPERTY(onShouldExecuteAction, RCTBubblingEventBlock)
 
+RCT_EXPORT_VIEW_PROPERTY(interceptSignatureFields, BOOL)
+
+RCT_EXPORT_VIEW_PROPERTY(onSignatureFieldTapped, RCTBubblingEventBlock)
+
 RCT_CUSTOM_VIEW_PROPERTY(availableFontNames, NSArray, RCTPSPDFKitView) {
   [NutrientPropsFontHelper applyAvailableFontNamesFromJSON:json toView:view];
 }
@@ -300,6 +304,34 @@ RCT_EXPORT_METHOD(setFormFieldValue:(nullable NSString *)value fullyQualifiedNam
     } else {
       reject(@"error", @"Failed to set form field value.", nil);
     }
+  });
+}
+
+RCT_EXPORT_METHOD(setFormFieldReadOnly:(NSString *)fullyQualifiedName readOnly:(BOOL)readOnly persist:(BOOL)persist reactTag:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    RCTPSPDFKitView *component = (RCTPSPDFKitView *)[self.bridge.uiManager viewForReactTag:reactTag];
+    if (component == nil || component.pdfController.document == nil) {
+      reject(@"viewer_unavailable", @"The Nutrient viewer or document is not available.", nil);
+      return;
+    }
+    BOOL success = [component setFormFieldReadOnly:fullyQualifiedName readOnly:readOnly persist:persist];
+    if (success) {
+      resolve(@YES);
+    } else {
+      reject(@"field_not_found", @"No form field with that fully qualified name was found.", nil);
+    }
+  });
+}
+
+RCT_EXPORT_METHOD(dismissSignaturePad:(nonnull NSNumber *)reactTag resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    RCTPSPDFKitView *component = (RCTPSPDFKitView *)[self.bridge.uiManager viewForReactTag:reactTag];
+    if (component == nil) {
+      reject(@"viewer_unavailable", @"The Nutrient viewer is not available.", nil);
+      return;
+    }
+    BOOL dismissed = [component dismissSignaturePad];
+    resolve(@(dismissed));
   });
 }
 
